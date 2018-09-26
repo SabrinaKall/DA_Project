@@ -8,16 +8,23 @@ public class Message implements Serializable{
 
     private int id;
     private String message;
+    private boolean ack;
 
     public Message(String packet) {
         String idString = packet.substring(0, packet.indexOf("\n"));
         this.id = Integer.parseInt(idString);
         this.message = packet.substring(packet.indexOf("\n") + 1, packet.length());
+        ack = false;
     }
 
     public Message(int id, String message) {
         this.id = id;
         this.message = message;
+    }
+
+    public Message(boolean ack, int id) {
+        this.ack = ack;
+        this.id = id;
     }
 
     public String getMessage() {
@@ -38,6 +45,14 @@ public class Message implements Serializable{
 
     public String toString() {
         return id + "\n" + message;
+    }
+
+    public boolean isAck() {
+        return ack;
+    }
+
+    public void setAck(boolean ack) {
+        this.ack = ack;
     }
 
     public byte[] convertToBytes() throws IOException {

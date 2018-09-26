@@ -3,7 +3,7 @@ package links;
 import data.Address;
 import data.Message;
 import data.Packet;
-import data.ObserverFLL;
+import observer.FLLObserver;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -12,18 +12,22 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 public class FairLossLink implements Link, Runnable {
+
     private DatagramSocket socket;
-    private ObserverFLL obsFLL = null;
+    private FLLObserver obsFLL = null;
 
     public FairLossLink(int port) throws SocketException {
         this.socket = new DatagramSocket(port);
     }
 
-    public void registerObserver(ObserverFLL obsFLL) {
+    public void registerObserver(FLLObserver obsFLL) {
         this.obsFLL = obsFLL;
     }
 
-    public boolean hasObserver() { return this.obsFLL != null; }
+    public boolean hasObserver() {
+        boolean ret = (this.obsFLL == null);
+
+        return !ret; }
 
     @Override
     public void send(Packet dest) throws IOException {
@@ -35,7 +39,7 @@ public class FairLossLink implements Link, Runnable {
 
     }
 
-    @Override
+
     public Packet receive() throws IOException {
         //TODO: watch out for longer strings
         byte[] buffer = new byte[1024];

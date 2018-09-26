@@ -46,8 +46,6 @@ public class FairLossLinksTest {
             Packet packet = new Packet(message, address);
             sender.send(packet);
 
-
-
             Packet received = receiver.receive();
             Assertions.assertEquals(received.getMessage().getMessage(), "Hello World");
             Assertions.assertEquals(received.getMessage().getId(), 0);

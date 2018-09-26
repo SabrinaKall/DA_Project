@@ -3,73 +3,90 @@ package links;
 import data.Address;
 import data.Message;
 import data.Packet;
+import observer.PLObserver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 
 public class PerfectLinksTest {
 
     private static final int IN_PORT = 8000;
     private static final int OUT_PORT = 8001;
 
+    private class TestObserver implements PLObserver {
+
+        private Packet delivered = new Packet();
+
+        public TestObserver(){}
+
+        @Override
+        public void deliverPL(Packet p) {
+            this.delivered = p;
+        }
+
+        public Packet getDelivered() {
+            return delivered;
+        }
+    }
+
     @Test
     public void sendWorks() {
         try {
             InetAddress ip = InetAddress.getLocalHost();
-            FairLossLink fairLossLink = new FairLossLink(8003);
-            PerfectLink link = new PerfectLink(fairLossLink);
+            PerfectLink link = new PerfectLink(8003);
 
             Address address = new Address(ip, 8002);
             Message message = new Message(0, "Hello World");
             Packet packet = new Packet(message, address);
 
-            Thread thread = new Thread(() -> {
-                try {
-                    link.send(packet);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+            link.send(packet);
 
-            thread.start();
-            Thread.sleep(1);
-            thread.interrupt();
-
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
         } catch (SocketException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
+
 
     @Test
     public void receiveWorks() {
         try {
 
             InetAddress ip = InetAddress.getLocalHost();
-            FairLossLink fairLossSender = new FairLossLink(IN_PORT);
-            FairLossLink fairLossReceiver = new FairLossLink(OUT_PORT);
 
-            PerfectLink sender = new PerfectLink(fairLossSender);
-            PerfectLink receiver = new PerfectLink(fairLossReceiver);
+            PerfectLink sender = new PerfectLink(IN_PORT);
+            PerfectLink receiver = new PerfectLink(OUT_PORT);
+
+            TestObserver testObserver = new TestObserver();
+
+            receiver.registerObserver(testObserver);
 
             Address address = new Address(ip, OUT_PORT);
             Message message = new Message(0, "Hello World");
             Packet packet = new Packet(message, address);
             sender.send(packet);
 
-            Packet received = receiver.receive();
-            Assertions.assertEquals(received.getMessage().getMessage(), "Hello World");
-            Assertions.assertEquals(received.getMessage().getId(), 0);
+            //Wait for delivery
+            Thread.sleep(1000);
+
+            Packet received = testObserver.getDelivered();
+
+            Assertions.assertEquals(false, received.isEmpty());
+            Assertions.assertEquals("Hello World", received.getMessage().getMessage());
+            Assertions.assertEquals( 1, received.getMessage().getId());
 
         } catch (SocketException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
