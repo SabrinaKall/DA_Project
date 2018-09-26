@@ -1,19 +1,24 @@
 package links;
 
+import data.ObserverFLL;
 import data.Packet;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PerfectLink implements Link{
+public class PerfectLink implements Link, ObserverFLL {
 
     private Set<Packet> delivered = new HashSet<>();
 
-    private StubbornLink stubbornLink;
+    private FairLossLink fll;
 
-    public PerfectLink(StubbornLink stubbornLink) {
-        this.stubbornLink = stubbornLink;
+    public PerfectLink(int port) throws SocketException {
+        this.fll = new FairLossLink(port);
+        this.fll.registerObserver(this);
+        Thread t = new Thread(this.fll);
+        t.start();
     }
 
     @Override
@@ -22,12 +27,19 @@ public class PerfectLink implements Link{
     }
 
     @Override
-    public Packet receive() throws IOException {
-        Packet received = stubbornLink.receive();
+    public void receive() throws IOException {
         if(!delivered.contains(received)) {
             delivered.add(received);
             return received;
         }
         return new Packet();
+    }
+
+    @Override
+    public void deliverFLL(Packet received) {
+        if(!delivered.contains(received)) {
+            delivered.add(received);
+            this.receive();
+        }
     }
 }
