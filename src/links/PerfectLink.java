@@ -23,11 +23,14 @@ public class PerfectLink implements Link, ObserverFLL {
 
     @Override
     public void send(Packet dest) throws IOException {
-        stubbornLink.send(dest);
+        while(true) {
+            fairLossLink.send(dest);
+        }
     }
 
     @Override
-    public void receive() throws IOException {
+    public Packet receive() throws IOException {
+        Packet received = fairLossLink.receive();
         if(!delivered.contains(received)) {
             delivered.add(received);
             return received;
