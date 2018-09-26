@@ -10,20 +10,22 @@ public class PerfectLink implements Link{
 
     private Set<Packet> delivered = new HashSet<>();
 
-    private StubbornLink stubbornLink;
+    private FairLossLink fairLossLink;
 
-    public PerfectLink(StubbornLink stubbornLink) {
-        this.stubbornLink = stubbornLink;
+    public PerfectLink(FairLossLink fairLossLink) {
+        this.fairLossLink = fairLossLink;
     }
 
     @Override
     public void send(Packet dest) throws IOException {
-        stubbornLink.send(dest);
+        while(true) {
+            fairLossLink.send(dest);
+        }
     }
 
     @Override
     public Packet receive() throws IOException {
-        Packet received = stubbornLink.receive();
+        Packet received = fairLossLink.receive();
         if(!delivered.contains(received)) {
             delivered.add(received);
             return received;
