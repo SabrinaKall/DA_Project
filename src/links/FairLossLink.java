@@ -27,7 +27,8 @@ public class FairLossLink implements Link, Runnable {
     public boolean hasObserver() {
         boolean ret = (this.obsFLL == null);
 
-        return !ret; }
+        return !ret;
+    }
 
     @Override
     public void send(Packet dest) throws IOException {
@@ -61,14 +62,16 @@ public class FairLossLink implements Link, Runnable {
     @Override
     public void run() {
         while(true) {
+
+            Packet p = null;
             try {
-                Packet p = this.receive();
-                if(hasObserver()) {
-                    this.obsFLL.deliverFLL(p);
-                }
+                p = this.receive();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            if(hasObserver()) {
+                    this.obsFLL.deliverFLL(p);
+                }
         }
     }
 }

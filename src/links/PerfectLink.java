@@ -48,11 +48,14 @@ public class PerfectLink implements Link, FLLObserver {
                 try {
                     while(true) {
                         fll.send(dest);
+                        Thread.sleep(500);
                     }
                 } catch (IOException e) {
                     //TODO
+                } catch (InterruptedException e) {
+                    System.out.println("Thread killed in sleep, but who cares");
                 }
-            });
+        });
         sentMapping.put(seqNum, thread);
 
         thread.start();
@@ -67,10 +70,13 @@ public class PerfectLink implements Link, FLLObserver {
             sentMapping.remove(message.getId());
             return;
         }
+
         acknowledge(received);
         if(!alreadyDeliveredPackets.contains(received)) {
             alreadyDeliveredPackets.add(received);
-            plObserver.deliverPL(received);
+            if(hasObserver()) {
+                plObserver.deliverPL(received);
+            }
         }
 
     }

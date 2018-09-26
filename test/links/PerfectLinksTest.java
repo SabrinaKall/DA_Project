@@ -19,13 +19,17 @@ public class PerfectLinksTest {
 
     private class TestObserver implements PLObserver {
 
-        private Packet delivered = new Packet();
+        private Packet delivered;
 
-        public TestObserver(){}
+        public TestObserver(){
+            this.delivered = new Packet();
+        }
 
         @Override
         public void deliverPL(Packet p) {
-            this.delivered = p;
+            if(p != null && this.delivered.isEmpty()) {
+                this.delivered = p;
+            }
         }
 
         public Packet getDelivered() {
@@ -65,7 +69,6 @@ public class PerfectLinksTest {
             PerfectLink receiver = new PerfectLink(OUT_PORT);
 
             TestObserver testObserver = new TestObserver();
-
             receiver.registerObserver(testObserver);
 
             Address address = new Address(ip, OUT_PORT);
