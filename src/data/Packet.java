@@ -7,11 +7,11 @@ public class Packet {
     private Address address;
 
     public Packet() {
-        empty = true;
+        this.empty = true;
     }
 
     public Packet(Message message, Address address) {
-        empty = false;
+        this.empty = false;
         this.message = message;
         this.address = address;
     }

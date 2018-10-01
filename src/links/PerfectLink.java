@@ -2,6 +2,7 @@ package links;
 
 import data.Address;
 import data.Message;
+import data.ReceivedMessages;
 import observer.FLLObserver;
 import data.Packet;
 import observer.PLObserver;
@@ -9,16 +10,15 @@ import observer.PLObserver;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class PerfectLink implements Link, FLLObserver {
 
     private int seqNum = 0;
 
-    private Set<Packet> alreadyDeliveredPackets = new HashSet<>();
+    //private Set<Packet> alreadyDeliveredPackets = new HashSet<>();
+
+    private Map<Integer, ReceivedMessages> alreadyDeliveredPackets = new TreeMap<>();
 
     private Map<Integer, Thread> sentMapping = new HashMap<>();
 
@@ -48,7 +48,7 @@ public class PerfectLink implements Link, FLLObserver {
                 try {
                     while(true) {
                         fll.send(dest);
-                        Thread.sleep(500);
+                        Thread.sleep(1000);
                     }
                 } catch (IOException e) {
                     //TODO
@@ -65,6 +65,7 @@ public class PerfectLink implements Link, FLLObserver {
     @Override
     public void deliverFLL(Packet received) {
         Message message = received.getMessage();
+        int senderId = received.getAddress().getProcessNumber();
         if(message.isAck() && sentMapping.containsKey(message.getId())) {
             sentMapping.get(message.getId()).interrupt();
             sentMapping.remove(message.getId());
@@ -72,8 +73,8 @@ public class PerfectLink implements Link, FLLObserver {
         }
 
         acknowledge(received);
-        if(!alreadyDeliveredPackets.contains(received)) {
-            alreadyDeliveredPackets.add(received);
+        if(!alreadyDeliveredPackets.get(senderId).contains(received.getMessage().getId())) {
+            alreadyDeliveredPackets.get(senderId).add(received.getMessage().getId());
             if(hasObserver()) {
                 plObserver.deliverPL(received);
             }

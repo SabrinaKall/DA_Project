@@ -29,7 +29,7 @@ public class Address {
     }
 
     //TODO
-    public int getProcessNUmber() {
+    public int getProcessNumber() {
         return 0;
     }
 }
