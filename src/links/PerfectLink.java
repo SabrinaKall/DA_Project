@@ -2,15 +2,16 @@ package links;
 
 import data.Address;
 import data.Message;
+import data.Packet;
 import data.ReceivedMessages;
 import observer.FLLObserver;
-import data.Packet;
 import observer.PLObserver;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class PerfectLink implements Link, FLLObserver {
 
@@ -48,12 +49,9 @@ public class PerfectLink implements Link, FLLObserver {
                 try {
                     while(true) {
                         fll.send(dest);
-                        Thread.sleep(1000);
                     }
                 } catch (IOException e) {
                     //TODO
-                } catch (InterruptedException e) {
-                    System.out.println("Thread killed in sleep, but who cares");
                 }
         });
         sentMapping.put(seqNum, thread);
@@ -73,6 +71,9 @@ public class PerfectLink implements Link, FLLObserver {
         }
 
         acknowledge(received);
+        if(!alreadyDeliveredPackets.keySet().contains(senderId)) {
+            alreadyDeliveredPackets.put(senderId, new ReceivedMessages());
+        }
         if(!alreadyDeliveredPackets.get(senderId).contains(received.getMessage().getId())) {
             alreadyDeliveredPackets.get(senderId).add(received.getMessage().getId());
             if(hasObserver()) {
