@@ -81,7 +81,7 @@ public class PerfectLinksTest {
 
             Packet received = testObserver.getDelivered();
 
-            Assertions.assertEquals(false, received.isEmpty());
+            Assertions.assertFalse(received.isEmpty());
             Assertions.assertEquals("Hello World", received.getMessage().getMessage());
             Assertions.assertEquals( 1, received.getMessage().getId());
 

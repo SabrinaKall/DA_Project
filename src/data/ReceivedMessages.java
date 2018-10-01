@@ -7,7 +7,7 @@ import java.util.TreeSet;
 public class ReceivedMessages {
 
     private int smallest;
-    SortedSet<Integer> received;
+    private SortedSet<Integer> received;
 
     public ReceivedMessages() {
         this.smallest = 0;
@@ -34,17 +34,16 @@ public class ReceivedMessages {
 
         if(smallest + 1 == newReceived) {
             smallest = newReceived;
-            int index = 0;
             for(Integer prevReceived: received) {
                 if(smallest + 1 == prevReceived) {
                     smallest += 1;
-                    index += 1;
                 }
                 else {
                     break;
                 }
             }
-            received = received.tailSet(index);
+
+            received = received.tailSet(smallest + 1);
 
         }
         else if (newReceived > smallest) {
