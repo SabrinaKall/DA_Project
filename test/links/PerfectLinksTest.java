@@ -2,6 +2,8 @@ package links;
 
 import data.Message;
 import data.Packet;
+import exception.BadIPException;
+import exception.UnreadableFileException;
 import observer.PLObserver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -19,13 +21,13 @@ public class PerfectLinksTest {
 
         private Packet delivered;
 
-        public TestObserver(){
+        public TestObserver() {
             this.delivered = new Packet();
         }
 
         @Override
         public void deliverPL(Packet p) {
-            if(p != null && this.delivered.isEmpty()) {
+            if (p != null && this.delivered.isEmpty()) {
                 this.delivered = p;
             }
         }
@@ -57,9 +59,12 @@ public class PerfectLinksTest {
         } catch (IOException e) {
             Assertions.fail("IOException thrown");
             e.printStackTrace();
-        } catch (Throwable throwable) {
-            Assertions.fail("Throwable thrown (by finalize)");
-            throwable.printStackTrace();
+        } catch (BadIPException e) {
+            Assertions.fail("BadIpException thrown");
+            e.printStackTrace();
+        } catch (UnreadableFileException e) {
+            Assertions.fail("UnreadableFileException thrown");
+            e.printStackTrace();
         }
     }
 
@@ -84,7 +89,7 @@ public class PerfectLinksTest {
 
             Assertions.assertFalse(received.isEmpty());
             Assertions.assertEquals("Hello World", received.getMessage().getMessage());
-            Assertions.assertEquals( 1, received.getMessage().getId());
+            Assertions.assertEquals(1, received.getMessage().getId());
 
             sender.finalize();
             receiver.finalize();
@@ -99,9 +104,14 @@ public class PerfectLinksTest {
         } catch (IOException e) {
             Assertions.fail("IOException thrown");
             e.printStackTrace();
-        } catch (Throwable throwable) {
-            Assertions.fail("Throwable thrown (by finalize)");
-            throwable.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (BadIPException e) {
+            Assertions.fail("BadIpException thrown");
+            e.printStackTrace();
+        } catch (UnreadableFileException e) {
+            Assertions.fail("UnreadableFileException thrown");
+            e.printStackTrace();
         }
     }
 }

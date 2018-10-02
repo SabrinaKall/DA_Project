@@ -31,21 +31,19 @@ public class ReceivedMessages {
 
     public void add(int newReceived) {
 
-        if(smallest + 1 == newReceived) {
+        if (smallest + 1 == newReceived) {
             smallest = newReceived;
-            for(Integer prevReceived: received) {
-                if(smallest + 1 == prevReceived) {
+            for (Integer prevReceived : received) {
+                if (smallest + 1 == prevReceived) {
                     smallest += 1;
-                }
-                else {
+                } else {
                     break;
                 }
             }
 
             received = received.tailSet(smallest + 1);
 
-        }
-        else if (newReceived > smallest) {
+        } else if (newReceived > smallest) {
             received.add(newReceived);
         }
     }

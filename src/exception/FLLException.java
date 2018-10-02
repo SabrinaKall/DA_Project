@@ -1,6 +1,6 @@
 package exception;
 
-public class FLLException extends Exception{
+public class FLLException extends Exception {
 
     public FLLException(String message) {
         super(message);

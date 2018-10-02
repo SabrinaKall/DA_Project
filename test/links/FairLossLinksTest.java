@@ -2,6 +2,8 @@ package links;
 
 import data.Message;
 import data.Packet;
+import exception.BadIPException;
+import exception.UnreadableFileException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,9 +33,12 @@ public class FairLossLinksTest {
         } catch (IOException e) {
             Assertions.fail("IOException thrown");
             e.printStackTrace();
-        } catch (Throwable throwable) {
-            Assertions.fail("Throwable thrown (by finalize)");
-            throwable.printStackTrace();
+        } catch (BadIPException e) {
+            Assertions.fail("BadIpException thrown");
+            e.printStackTrace();
+        } catch (UnreadableFileException e) {
+            Assertions.fail("UnreadableFileException thrown");
+            e.printStackTrace();
         }
     }
 
@@ -62,9 +67,15 @@ public class FairLossLinksTest {
         } catch (IOException e) {
             Assertions.fail("IOException thrown");
             e.printStackTrace();
-        } catch (Throwable throwable) {
-            Assertions.fail("Throwable thrown (by finalize)");
-            throwable.printStackTrace();
+        } catch (BadIPException e) {
+            Assertions.fail("BadIPException thrown");
+            e.printStackTrace();
+        } catch (UnreadableFileException e) {
+            Assertions.fail("UnreadableFileException thrown");
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            Assertions.fail("ClassNotFoundException thrown");
+            e.printStackTrace();
         }
     }
 }

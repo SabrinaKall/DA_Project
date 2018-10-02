@@ -1,9 +1,10 @@
 package links;
 
-import data.Address;
 import data.Message;
 import data.Packet;
 import data.ReceivedMessages;
+import exception.BadIPException;
+import exception.UnreadableFileException;
 import observer.FLLObserver;
 import observer.PLObserver;
 
@@ -26,7 +27,7 @@ public class PerfectLink implements Link, FLLObserver {
 
     private PLObserver plObserver = null;
 
-    public PerfectLink(int port) throws SocketException {
+    public PerfectLink(int port) throws SocketException, BadIPException, UnreadableFileException {
         this.fll = new FairLossLink(port);
         this.fll.registerObserver(this);
         thread = new Thread(this.fll);
@@ -37,7 +38,9 @@ public class PerfectLink implements Link, FLLObserver {
         this.plObserver = plObserver;
     }
 
-    public boolean hasObserver() { return this.plObserver != null; }
+    public boolean hasObserver() {
+        return this.plObserver != null;
+    }
 
     @Override
     public void send(Packet dest) throws IOException {
@@ -46,7 +49,7 @@ public class PerfectLink implements Link, FLLObserver {
 
         //TODO: to be discussed: does this work/ is this necessary
         synchronized (sentProcessIds) {
-            if(!sentProcessIds.containsKey(processId)) {
+            if (!sentProcessIds.containsKey(processId)) {
                 sentProcessIds.put(processId, 0);
             }
             seqNum = sentProcessIds.get(processId) + 1;
@@ -57,13 +60,13 @@ public class PerfectLink implements Link, FLLObserver {
         dest.getMessage().setId(seqNum);
 
         Thread thread = new Thread(() -> {
+            while (true) {
                 try {
-                    while(true) {
-                        fll.send(dest);
-                    }
+                    fll.send(dest);
                 } catch (IOException e) {
-                    //TODO
+                    //TODO: logger, then continue sending
                 }
+            }
         });
         sentMapping.put(seqNum, thread);
 
@@ -75,19 +78,19 @@ public class PerfectLink implements Link, FLLObserver {
     public void deliverFLL(Packet received) {
         Message message = received.getMessage();
         int senderId = received.getProcessId();
-        if(message.isAck() && sentMapping.containsKey(message.getId())) {
+        if (message.isAck() && sentMapping.containsKey(message.getId())) {
             sentMapping.get(message.getId()).interrupt();
             sentMapping.remove(message.getId());
             return;
         }
 
         acknowledge(received);
-        if(!alreadyDeliveredPackets.keySet().contains(senderId)) {
+        if (!alreadyDeliveredPackets.keySet().contains(senderId)) {
             alreadyDeliveredPackets.put(senderId, new ReceivedMessages());
         }
-        if(!alreadyDeliveredPackets.get(senderId).contains(received.getMessage().getId())) {
+        if (!alreadyDeliveredPackets.get(senderId).contains(received.getMessage().getId())) {
             alreadyDeliveredPackets.get(senderId).add(received.getMessage().getId());
-            if(hasObserver()) {
+            if (hasObserver()) {
                 plObserver.deliverPL(received);
             }
         }
@@ -103,13 +106,13 @@ public class PerfectLink implements Link, FLLObserver {
         try {
             fll.send(ackPacket);
         } catch (IOException e) {
-            //TODO
+            //TODO:logger then move on
         }
     }
 
     @Override
-    public void finalize() throws Throwable {
-        for(int process: sentMapping.keySet()){
+    public void finalize() {
+        for (int process : sentMapping.keySet()) {
             sentMapping.get(process).interrupt();
         }
         thread.interrupt();
