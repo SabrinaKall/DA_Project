@@ -1,6 +1,5 @@
 package links;
 
-import data.Message;
 import data.Packet;
 
 import java.io.IOException;

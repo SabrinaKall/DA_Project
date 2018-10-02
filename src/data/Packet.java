@@ -4,16 +4,16 @@ public class Packet {
 
     private boolean empty;
     private Message message;
-    private Address address;
+    private int processId;
 
     public Packet() {
         this.empty = true;
     }
 
-    public Packet(Message message, Address address) {
+    public Packet(Message message, int processId) {
         this.empty = false;
         this.message = message;
-        this.address = address;
+        this.processId = processId;
     }
 
     public Message getMessage() {
@@ -24,12 +24,12 @@ public class Packet {
         this.message = message;
     }
 
-    public Address getAddress() {
-        return address;
+    public int getProcessId() {
+        return processId;
     }
 
-    public void setAddress(Address address) {
-        this.address = address;
+    public void setProcessId(int processId) {
+        this.processId = processId;
     }
 
     public boolean isEmpty() {

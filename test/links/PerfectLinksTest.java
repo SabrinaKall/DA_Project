@@ -14,8 +14,8 @@ import java.net.UnknownHostException;
 
 public class PerfectLinksTest {
 
-    private static final int IN_PORT = 8000;
-    private static final int OUT_PORT = 8001;
+    private static final int IN_PORT = 11001;
+    private static final int OUT_PORT = 11002;
 
     private class TestObserver implements PLObserver {
 
@@ -40,12 +40,11 @@ public class PerfectLinksTest {
     @Test
     public void sendWorks() {
         try {
-            InetAddress ip = InetAddress.getLocalHost();
-            PerfectLink link = new PerfectLink(8003);
 
-            Address address = new Address(ip, 8002);
+            PerfectLink link = new PerfectLink(11001);
+
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, address);
+            Packet packet = new Packet(message, 2);
 
             link.send(packet);
 
@@ -71,9 +70,8 @@ public class PerfectLinksTest {
             TestObserver testObserver = new TestObserver();
             receiver.registerObserver(testObserver);
 
-            Address address = new Address(ip, OUT_PORT);
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, address);
+            Packet packet = new Packet(message, 2);
             sender.send(packet);
 
             //Wait for delivery

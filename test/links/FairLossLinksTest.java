@@ -12,8 +12,9 @@ import java.net.SocketException;
 
 public class FairLossLinksTest {
 
-    private static final int IN_PORT = 8000;
-    private static final int OUT_PORT = 8001;
+    private static final int IN_PORT = 11001;
+    private static final int OUT_PORT = 11002;
+
 
     @Test
     public void sendWorks() {
@@ -23,7 +24,7 @@ public class FairLossLinksTest {
 
             Address address = new Address(ip, 8002);
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, address);
+            Packet packet = new Packet(message, 2);
             fairLossLink.send(packet);
 
         } catch (SocketException e) {
@@ -43,7 +44,7 @@ public class FairLossLinksTest {
 
             Address address = new Address(ip, OUT_PORT);
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, address);
+            Packet packet = new Packet(message, 2);
             sender.send(packet);
 
             Packet received = receiver.receive();
