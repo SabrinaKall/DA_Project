@@ -1,6 +1,5 @@
 package links;
 
-import data.Address;
 import data.Message;
 import data.Packet;
 import observer.PLObserver;
@@ -8,14 +7,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
 public class PerfectLinksTest {
 
-    private static final int IN_PORT = 8000;
-    private static final int OUT_PORT = 8001;
+    private static final int IN_PORT = 11001;
+    private static final int OUT_PORT = 11002;
 
     private class TestObserver implements PLObserver {
 
@@ -40,21 +38,28 @@ public class PerfectLinksTest {
     @Test
     public void sendWorks() {
         try {
-            InetAddress ip = InetAddress.getLocalHost();
-            PerfectLink link = new PerfectLink(8003);
 
-            Address address = new Address(ip, 8002);
+            PerfectLink link = new PerfectLink(11004);
+
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, address);
+            Packet packet = new Packet(message, 3);
 
             link.send(packet);
 
+            link.finalize();
+
         } catch (UnknownHostException e) {
+            Assertions.fail("UnknownHostException thrown");
             e.printStackTrace();
         } catch (SocketException e) {
+            Assertions.fail("SocketException thrown");
             e.printStackTrace();
         } catch (IOException e) {
+            Assertions.fail("IOException thrown");
             e.printStackTrace();
+        } catch (Throwable throwable) {
+            Assertions.fail("Throwable thrown (by finalize)");
+            throwable.printStackTrace();
         }
     }
 
@@ -62,18 +67,14 @@ public class PerfectLinksTest {
     @Test
     public void receiveWorks() {
         try {
-
-            InetAddress ip = InetAddress.getLocalHost();
-
             PerfectLink sender = new PerfectLink(IN_PORT);
             PerfectLink receiver = new PerfectLink(OUT_PORT);
 
             TestObserver testObserver = new TestObserver();
             receiver.registerObserver(testObserver);
 
-            Address address = new Address(ip, OUT_PORT);
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, address);
+            Packet packet = new Packet(message, 2);
             sender.send(packet);
 
             //Wait for delivery
@@ -81,16 +82,26 @@ public class PerfectLinksTest {
 
             Packet received = testObserver.getDelivered();
 
-            Assertions.assertEquals(false, received.isEmpty());
+            Assertions.assertFalse(received.isEmpty());
             Assertions.assertEquals("Hello World", received.getMessage().getMessage());
             Assertions.assertEquals( 1, received.getMessage().getId());
 
+            sender.finalize();
+            receiver.finalize();
+
+
+        } catch (UnknownHostException e) {
+            Assertions.fail("UnknownHostException thrown");
+            e.printStackTrace();
         } catch (SocketException e) {
+            Assertions.fail("SocketException thrown");
             e.printStackTrace();
         } catch (IOException e) {
+            Assertions.fail("IOException thrown");
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (Throwable throwable) {
+            Assertions.fail("Throwable thrown (by finalize)");
+            throwable.printStackTrace();
         }
     }
 }

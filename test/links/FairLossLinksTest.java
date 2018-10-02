@@ -1,35 +1,39 @@
 package links;
 
-import data.Address;
 import data.Message;
 import data.Packet;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.SocketException;
 
 public class FairLossLinksTest {
 
-    private static final int IN_PORT = 8000;
-    private static final int OUT_PORT = 8001;
+    private static final int IN_PORT = 11001;
+    private static final int OUT_PORT = 11002;
+
 
     @Test
     public void sendWorks() {
         try {
-            InetAddress ip = InetAddress.getLocalHost();
-            FairLossLink fairLossLink = new FairLossLink(8003);
+            FairLossLink fairLossLink = new FairLossLink(8004);
 
-            Address address = new Address(ip, 8002);
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, address);
+            Packet packet = new Packet(message, 2);
             fairLossLink.send(packet);
 
+            fairLossLink.finalize();
+
         } catch (SocketException e) {
+            Assertions.fail("SocketException thrown");
             e.printStackTrace();
         } catch (IOException e) {
+            Assertions.fail("IOException thrown");
             e.printStackTrace();
+        } catch (Throwable throwable) {
+            Assertions.fail("Throwable thrown (by finalize)");
+            throwable.printStackTrace();
         }
     }
 
@@ -37,23 +41,30 @@ public class FairLossLinksTest {
     public void receiveWorks() {
         try {
 
-            InetAddress ip = InetAddress.getLocalHost();
             FairLossLink sender = new FairLossLink(IN_PORT);
             FairLossLink receiver = new FairLossLink(OUT_PORT);
 
-            Address address = new Address(ip, OUT_PORT);
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, address);
+            Packet packet = new Packet(message, 2);
             sender.send(packet);
 
             Packet received = receiver.receive();
+            Assertions.assertFalse(received.isEmpty());
             Assertions.assertEquals(received.getMessage().getMessage(), "Hello World");
             Assertions.assertEquals(received.getMessage().getId(), 0);
 
+            sender.finalize();
+            receiver.finalize();
+
         } catch (SocketException e) {
+            Assertions.fail("SocketException thrown");
             e.printStackTrace();
         } catch (IOException e) {
+            Assertions.fail("IOException thrown");
             e.printStackTrace();
+        } catch (Throwable throwable) {
+            Assertions.fail("Throwable thrown (by finalize)");
+            throwable.printStackTrace();
         }
     }
 }

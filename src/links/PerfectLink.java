@@ -2,23 +2,23 @@ package links;
 
 import data.Address;
 import data.Message;
-import observer.FLLObserver;
 import data.Packet;
+import data.ReceivedMessages;
+import observer.FLLObserver;
 import observer.PLObserver;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeMap;
 
 public class PerfectLink implements Link, FLLObserver {
 
-    private int seqNum = 0;
+    Thread thread;
 
-    private Set<Packet> alreadyDeliveredPackets = new HashSet<>();
+    private Map<Integer, ReceivedMessages> alreadyDeliveredPackets = new TreeMap<>();
+    private Map<Integer, Integer> sentProcessIds = new TreeMap<>();
 
     private Map<Integer, Thread> sentMapping = new HashMap<>();
 
@@ -29,8 +29,8 @@ public class PerfectLink implements Link, FLLObserver {
     public PerfectLink(int port) throws SocketException {
         this.fll = new FairLossLink(port);
         this.fll.registerObserver(this);
-        Thread t = new Thread(this.fll);
-        t.start();
+        thread = new Thread(this.fll);
+        thread.start();
     }
 
     public void registerObserver(PLObserver plObserver) {
@@ -41,19 +41,28 @@ public class PerfectLink implements Link, FLLObserver {
 
     @Override
     public void send(Packet dest) throws IOException {
-        seqNum += 1;
+        int processId = dest.getProcessId();
+        int seqNum;
+
+        //TODO: to be discussed: does this work/ is this necessary
+        synchronized (sentProcessIds) {
+            if(!sentProcessIds.containsKey(processId)) {
+                sentProcessIds.put(processId, 0);
+            }
+            seqNum = sentProcessIds.get(processId) + 1;
+
+            sentProcessIds.replace(processId, seqNum);
+
+        }
         dest.getMessage().setId(seqNum);
 
         Thread thread = new Thread(() -> {
                 try {
                     while(true) {
                         fll.send(dest);
-                        Thread.sleep(500);
                     }
                 } catch (IOException e) {
                     //TODO
-                } catch (InterruptedException e) {
-                    System.out.println("Thread killed in sleep, but who cares");
                 }
         });
         sentMapping.put(seqNum, thread);
@@ -65,6 +74,7 @@ public class PerfectLink implements Link, FLLObserver {
     @Override
     public void deliverFLL(Packet received) {
         Message message = received.getMessage();
+        int senderId = received.getProcessId();
         if(message.isAck() && sentMapping.containsKey(message.getId())) {
             sentMapping.get(message.getId()).interrupt();
             sentMapping.remove(message.getId());
@@ -72,8 +82,11 @@ public class PerfectLink implements Link, FLLObserver {
         }
 
         acknowledge(received);
-        if(!alreadyDeliveredPackets.contains(received)) {
-            alreadyDeliveredPackets.add(received);
+        if(!alreadyDeliveredPackets.keySet().contains(senderId)) {
+            alreadyDeliveredPackets.put(senderId, new ReceivedMessages());
+        }
+        if(!alreadyDeliveredPackets.get(senderId).contains(received.getMessage().getId())) {
+            alreadyDeliveredPackets.get(senderId).add(received.getMessage().getId());
             if(hasObserver()) {
                 plObserver.deliverPL(received);
             }
@@ -84,9 +97,9 @@ public class PerfectLink implements Link, FLLObserver {
     private void acknowledge(Packet received) {
 
         int receivedId = received.getMessage().getId();
-        Address sender = received.getAddress();
+        int senderId = received.getProcessId();
         Message ack = new Message(true, receivedId);
-        Packet ackPacket = new Packet(ack, sender);
+        Packet ackPacket = new Packet(ack, senderId);
         try {
             fll.send(ackPacket);
         } catch (IOException e) {
@@ -94,4 +107,12 @@ public class PerfectLink implements Link, FLLObserver {
         }
     }
 
+    @Override
+    public void finalize() throws Throwable {
+        for(int process: sentMapping.keySet()){
+            sentMapping.get(process).interrupt();
+        }
+        thread.interrupt();
+        fll.finalize();
+    }
 }
