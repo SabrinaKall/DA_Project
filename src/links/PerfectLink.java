@@ -15,9 +15,7 @@ import java.util.TreeMap;
 
 public class PerfectLink implements Link, FLLObserver {
 
-    //private int seqNum = 0;
-
-    //private Set<Packet> alreadyDeliveredPackets = new HashSet<>();
+    Thread thread;
 
     private Map<Integer, ReceivedMessages> alreadyDeliveredPackets = new TreeMap<>();
     private Map<Integer, Integer> sentProcessIds = new TreeMap<>();
@@ -31,8 +29,8 @@ public class PerfectLink implements Link, FLLObserver {
     public PerfectLink(int port) throws SocketException {
         this.fll = new FairLossLink(port);
         this.fll.registerObserver(this);
-        Thread t = new Thread(this.fll);
-        t.start();
+        thread = new Thread(this.fll);
+        thread.start();
     }
 
     public void registerObserver(PLObserver plObserver) {
@@ -48,7 +46,11 @@ public class PerfectLink implements Link, FLLObserver {
 
         //TODO: to be discussed: does this work/ is this necessary
         synchronized (sentProcessIds) {
+            if(!sentProcessIds.containsKey(processId)) {
+                sentProcessIds.put(processId, 0);
+            }
             seqNum = sentProcessIds.get(processId) + 1;
+
             sentProcessIds.replace(processId, seqNum);
 
         }
@@ -105,4 +107,12 @@ public class PerfectLink implements Link, FLLObserver {
         }
     }
 
+    @Override
+    public void finalize() throws Throwable {
+        for(int process: sentMapping.keySet()){
+            sentMapping.get(process).interrupt();
+        }
+        thread.interrupt();
+        fll.finalize();
+    }
 }

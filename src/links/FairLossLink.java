@@ -55,7 +55,15 @@ public class FairLossLink implements Link, Runnable {
         //TODO: watch out for longer strings
         byte[] buffer = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        socket.receive(packet);
+
+        try {
+            socket.receive(packet);
+        } catch (IOException e) {
+            if(!socket.isClosed()) {
+                e.printStackTrace();
+            }
+            throw e;
+        }
 
         Message message = null;
         try {
@@ -78,7 +86,7 @@ public class FairLossLink implements Link, Runnable {
             try {
                 p = this.receive();
             } catch (IOException e) {
-                e.printStackTrace();
+                return;
             }
             if(hasObserver()) {
                     this.obsFLL.deliverFLL(p);
@@ -91,8 +99,6 @@ public class FairLossLink implements Link, Runnable {
     }
 
     private int getProcessId(Address address) {
-        System.out.println(memberships_by_address);
-
         return memberships_by_address.get(address);
     }
 
@@ -116,5 +122,10 @@ public class FairLossLink implements Link, Runnable {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public void finalize() throws Throwable {
+        socket.close();
     }
 }

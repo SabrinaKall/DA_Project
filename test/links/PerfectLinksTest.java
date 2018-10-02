@@ -41,12 +41,14 @@ public class PerfectLinksTest {
     public void sendWorks() {
         try {
 
-            PerfectLink link = new PerfectLink(11001);
+            PerfectLink link = new PerfectLink(11004);
 
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, 2);
+            Packet packet = new Packet(message, 3);
 
             link.send(packet);
+
+            link.finalize();
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -54,6 +56,8 @@ public class PerfectLinksTest {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
     }
 
@@ -61,9 +65,6 @@ public class PerfectLinksTest {
     @Test
     public void receiveWorks() {
         try {
-
-            InetAddress ip = InetAddress.getLocalHost();
-
             PerfectLink sender = new PerfectLink(IN_PORT);
             PerfectLink receiver = new PerfectLink(OUT_PORT);
 
@@ -83,12 +84,18 @@ public class PerfectLinksTest {
             Assertions.assertEquals("Hello World", received.getMessage().getMessage());
             Assertions.assertEquals( 1, received.getMessage().getId());
 
+            sender.finalize();
+            receiver.finalize();
+
+
         } catch (SocketException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
     }
 }

@@ -19,18 +19,20 @@ public class FairLossLinksTest {
     @Test
     public void sendWorks() {
         try {
-            InetAddress ip = InetAddress.getLocalHost();
-            FairLossLink fairLossLink = new FairLossLink(8003);
+            FairLossLink fairLossLink = new FairLossLink(8004);
 
-            Address address = new Address(ip, 8002);
             Message message = new Message(0, "Hello World");
             Packet packet = new Packet(message, 2);
             fairLossLink.send(packet);
+
+            fairLossLink.finalize();
 
         } catch (SocketException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
     }
 
@@ -38,11 +40,9 @@ public class FairLossLinksTest {
     public void receiveWorks() {
         try {
 
-            InetAddress ip = InetAddress.getLocalHost();
             FairLossLink sender = new FairLossLink(IN_PORT);
             FairLossLink receiver = new FairLossLink(OUT_PORT);
 
-            Address address = new Address(ip, OUT_PORT);
             Message message = new Message(0, "Hello World");
             Packet packet = new Packet(message, 2);
             sender.send(packet);
@@ -52,10 +52,15 @@ public class FairLossLinksTest {
             Assertions.assertEquals(received.getMessage().getMessage(), "Hello World");
             Assertions.assertEquals(received.getMessage().getId(), 0);
 
+            sender.finalize();
+            receiver.finalize();
+
         } catch (SocketException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
     }
 }
