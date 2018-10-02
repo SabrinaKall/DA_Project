@@ -60,6 +60,7 @@ public class FairLossLink implements Link, Runnable {
             socket.receive(packet);
         } catch (IOException e) {
             if(!socket.isClosed()) {
+                //TODO
                 e.printStackTrace();
             }
             throw e;
@@ -86,6 +87,7 @@ public class FairLossLink implements Link, Runnable {
             try {
                 p = this.receive();
             } catch (IOException e) {
+                //TODO
                 return;
             }
             if(hasObserver()) {
@@ -119,6 +121,7 @@ public class FairLossLink implements Link, Runnable {
             }
 
         } catch (IOException e) {
+            //TODO
             e.printStackTrace();
         }
 

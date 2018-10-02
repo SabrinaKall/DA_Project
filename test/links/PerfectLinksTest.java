@@ -1,6 +1,5 @@
 package links;
 
-import data.Address;
 import data.Message;
 import data.Packet;
 import observer.PLObserver;
@@ -8,7 +7,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -51,12 +49,16 @@ public class PerfectLinksTest {
             link.finalize();
 
         } catch (UnknownHostException e) {
+            Assertions.fail("UnknownHostException thrown");
             e.printStackTrace();
         } catch (SocketException e) {
+            Assertions.fail("SocketException thrown");
             e.printStackTrace();
         } catch (IOException e) {
+            Assertions.fail("IOException thrown");
             e.printStackTrace();
         } catch (Throwable throwable) {
+            Assertions.fail("Throwable thrown (by finalize)");
             throwable.printStackTrace();
         }
     }
@@ -88,13 +90,17 @@ public class PerfectLinksTest {
             receiver.finalize();
 
 
+        } catch (UnknownHostException e) {
+            Assertions.fail("UnknownHostException thrown");
+            e.printStackTrace();
         } catch (SocketException e) {
+            Assertions.fail("SocketException thrown");
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+            Assertions.fail("IOException thrown");
             e.printStackTrace();
         } catch (Throwable throwable) {
+            Assertions.fail("Throwable thrown (by finalize)");
             throwable.printStackTrace();
         }
     }

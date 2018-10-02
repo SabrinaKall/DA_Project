@@ -1,13 +1,11 @@
 package links;
 
-import data.Address;
 import data.Message;
 import data.Packet;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.SocketException;
 
 public class FairLossLinksTest {
@@ -28,10 +26,13 @@ public class FairLossLinksTest {
             fairLossLink.finalize();
 
         } catch (SocketException e) {
+            Assertions.fail("SocketException thrown");
             e.printStackTrace();
         } catch (IOException e) {
+            Assertions.fail("IOException thrown");
             e.printStackTrace();
         } catch (Throwable throwable) {
+            Assertions.fail("Throwable thrown (by finalize)");
             throwable.printStackTrace();
         }
     }
@@ -56,10 +57,13 @@ public class FairLossLinksTest {
             receiver.finalize();
 
         } catch (SocketException e) {
+            Assertions.fail("SocketException thrown");
             e.printStackTrace();
         } catch (IOException e) {
+            Assertions.fail("IOException thrown");
             e.printStackTrace();
         } catch (Throwable throwable) {
+            Assertions.fail("Throwable thrown (by finalize)");
             throwable.printStackTrace();
         }
     }
