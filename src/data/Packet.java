@@ -6,8 +6,6 @@ public class Packet {
     private Message message;
     private int processId;
 
-    private int originalSenderI
-
     public Packet() {
         this.empty = true;
     }

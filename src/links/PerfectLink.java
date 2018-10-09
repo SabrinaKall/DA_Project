@@ -1,8 +1,6 @@
 package links;
 
-import data.Message;
-import data.Packet;
-import data.ReceivedMessages;
+import data.*;
 import exception.BadIPException;
 import exception.UnreadableFileException;
 import observer.FairLossLinkObserver;
@@ -54,22 +52,19 @@ public class PerfectLink implements Link, FairLossLinkObserver {
             seqNum = sentProcessIds.get(destID) + 1;
 
             sentProcessIds.replace(destID, seqNum);
-
         }
-        message.setMessageSequenceNumber(seqNum);
+
+        PLMessage mNew = new PLMessage(message, seqNum, false);
 
         Thread thread = new Thread(() -> {
             while (true) {
                 try {
-                    fll.send(message, destID);
-                    Thread.sleep(1000);
+                    fll.send(mNew, destID);
                 } catch (IOException e) {
                     //TODO: logger, then continue sending
                 } catch (BadIPException e) {
                     e.printStackTrace();
                 } catch (UnreadableFileException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
@@ -82,21 +77,24 @@ public class PerfectLink implements Link, FairLossLinkObserver {
 
     @Override
     public void deliverFLL(Packet received) throws BadIPException, IOException, UnreadableFileException {
-        Message message = received.getMessage();
+        PLMessage message = (PLMessage) received.getMessage();
         int senderId = received.getProcessId();
         if (message.isAck() && sentMapping.containsKey(message.getMessageSequenceNumber())) {
             sentMapping.get(message.getMessageSequenceNumber()).interrupt();
             sentMapping.remove(message.getMessageSequenceNumber());
+            System.out.println("Ack");
             return;
         }
 
         acknowledge(received);
+        //if process never messaged us before, init in map
         if (!alreadyDeliveredPackets.keySet().contains(senderId)) {
             alreadyDeliveredPackets.put(senderId, new ReceivedMessages());
         }
-        if (!alreadyDeliveredPackets.get(senderId).contains(received.getMessage().getMessageSequenceNumber())) {
-            alreadyDeliveredPackets.get(senderId).add(received.getMessage().getMessageSequenceNumber());
+        if (!alreadyDeliveredPackets.get(senderId).contains(message.getMessageSequenceNumber())) {
+            alreadyDeliveredPackets.get(senderId).add(message.getMessageSequenceNumber());
             if (hasObserver()) {
+                System.out.println("I exist");
                 perfectLinkObserver.deliverPL(received);
             }
         }
@@ -104,10 +102,10 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     }
 
     private void acknowledge(Packet received) {
-
-        int receivedId = received.getMessage().getMessageSequenceNumber();
+        PLMessage message = (PLMessage) received.getMessage();
+        int receivedSeqNum = message.getMessageSequenceNumber();
         int senderId = received.getProcessId();
-        Message ack = new Message(true, receivedId);
+        PLMessage ack = new PLMessage(null, receivedSeqNum, true);
         try {
             fll.send(ack, senderId);
         } catch (IOException e) {

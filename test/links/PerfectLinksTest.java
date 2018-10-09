@@ -1,7 +1,9 @@
 package links;
 
 import data.Message;
+import data.PLMessage;
 import data.Packet;
+import data.SimpleMessage;
 import exception.BadIPException;
 import exception.UnreadableFileException;
 import observer.PerfectLinkObserver;
@@ -43,7 +45,7 @@ public class PerfectLinksTest {
 
             PerfectLink link = new PerfectLink(11004);
 
-            Message message = new Message(0, "Hello World");
+            Message message = new SimpleMessage("Hello World");
 
             link.send(message, 3);
 
@@ -77,8 +79,7 @@ public class PerfectLinksTest {
             TestObserver testObserver = new TestObserver();
             receiver.registerObserver(testObserver);
 
-            Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, 2);
+            Message message = new SimpleMessage( "Hello World");
             sender.send(message, 2);
 
             //Wait for delivery
@@ -86,9 +87,12 @@ public class PerfectLinksTest {
 
             Packet received = testObserver.getDelivered();
 
-            Assertions.assertFalse(received.isEmpty());
-            Assertions.assertEquals("Hello World", received.getMessage().getMessage());
-            Assertions.assertEquals(1, received.getMessage().getMessageSequenceNumber());
+            PLMessage receivedMessage = (PLMessage) received.getMessage();
+
+            SimpleMessage contained = (SimpleMessage) receivedMessage.getMessage();
+
+            //Assertions.assertFalse(received.isEmpty());
+            Assertions.assertEquals("Hello World", contained.getText());
 
             sender.finalize();
             receiver.finalize();

@@ -2,6 +2,7 @@ package links;
 
 import data.Message;
 import data.Packet;
+import data.SimpleMessage;
 import exception.BadIPException;
 import exception.UnreadableFileException;
 import org.junit.jupiter.api.Assertions;
@@ -21,7 +22,7 @@ public class FairLossLinksTest {
         try {
             FairLossLink fairLossLink = new FairLossLink(8004);
 
-            Message message = new Message(0, "Hello World");
+            Message message = new SimpleMessage("Hello World");
             fairLossLink.send(message, 2);
 
             fairLossLink.finalize();
@@ -48,13 +49,14 @@ public class FairLossLinksTest {
             FairLossLink sender = new FairLossLink(IN_PORT);
             FairLossLink receiver = new FairLossLink(OUT_PORT);
 
-            Message message = new Message(0, "Hello World");
+            Message message = new SimpleMessage("Hello World");
             sender.send(message, 2);
 
             Packet received = receiver.receive();
+            SimpleMessage rec = (SimpleMessage) received.getMessage();
+
             Assertions.assertFalse(received.isEmpty());
-            Assertions.assertEquals(received.getMessage().getMessage(), "Hello World");
-            Assertions.assertEquals(received.getMessage().getMessageSequenceNumber(), 0);
+            Assertions.assertEquals(rec.getText(), "Hello World");
 
             sender.finalize();
             receiver.finalize();

@@ -35,6 +35,7 @@ public class FairLossLink implements Link, Runnable {
 
     @Override
     public void send(Message message, int destID) throws IOException, BadIPException, UnreadableFileException {
+
         byte[] messageArray = message.convertToBytes();
         Address destAddress = Memberships.getAddress(destID);
         DatagramPacket packet = new DatagramPacket(messageArray, messageArray.length,
@@ -82,7 +83,15 @@ public class FairLossLink implements Link, Runnable {
             }
 
             if (hasObserver()) {
-                this.obsFLL.deliverFLL(p);
+                try {
+                    this.obsFLL.deliverFLL(p);
+                } catch (BadIPException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (UnreadableFileException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

@@ -49,7 +49,7 @@ public class ReceivedMessages {
     }
 
     public boolean contains(int newReceived) {
-        return smallest == newReceived || received.contains(newReceived);
+        return smallest >= newReceived || received.contains(newReceived);
     }
 
 }

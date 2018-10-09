@@ -34,6 +34,16 @@ public class ReceivedMessagesTest {
     }
 
     @Test
+    public void smallerMessageReceived() {
+
+        ReceivedMessages receivedMessages = new ReceivedMessages();
+        receivedMessages.setSmallest(3);
+
+        Assertions.assertTrue(receivedMessages.contains(1));
+
+    }
+
+    @Test
     public void addWorks() {
 
         testObject.add(2);
