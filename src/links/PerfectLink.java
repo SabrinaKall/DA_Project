@@ -82,7 +82,6 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         if (message.isAck() && sentMapping.containsKey(message.getMessageSequenceNumber())) {
             sentMapping.get(message.getMessageSequenceNumber()).interrupt();
             sentMapping.remove(message.getMessageSequenceNumber());
-            System.out.println("Ack");
             return;
         }
 
@@ -94,8 +93,8 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         if (!alreadyDeliveredPackets.get(senderId).contains(message.getMessageSequenceNumber())) {
             alreadyDeliveredPackets.get(senderId).add(message.getMessageSequenceNumber());
             if (hasObserver()) {
-                System.out.println("I exist");
-                perfectLinkObserver.deliverPL(received);
+                Message unwrapped = ((PLMessage) received.getMessage()).getMessage();
+                perfectLinkObserver.deliverPL(new Packet(unwrapped, received.getProcessId()));
             }
         }
 

@@ -87,12 +87,10 @@ public class PerfectLinksTest {
 
             Packet received = testObserver.getDelivered();
 
-            PLMessage receivedMessage = (PLMessage) received.getMessage();
-
-            SimpleMessage contained = (SimpleMessage) receivedMessage.getMessage();
+            SimpleMessage receivedMessage = (SimpleMessage) received.getMessage();
 
             //Assertions.assertFalse(received.isEmpty());
-            Assertions.assertEquals("Hello World", contained.getText());
+            Assertions.assertEquals("Hello World", receivedMessage.getText());
 
             sender.finalize();
             receiver.finalize();
