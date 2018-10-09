@@ -5,8 +5,8 @@ import data.Packet;
 import data.ReceivedMessages;
 import exception.BadIPException;
 import exception.UnreadableFileException;
-import observer.FLLObserver;
-import observer.PLObserver;
+import observer.FairLossLinkObserver;
+import observer.PerfectLinkObserver;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class PerfectLink implements Link, FLLObserver {
+public class PerfectLink implements Link, FairLossLinkObserver {
 
     Thread thread;
 
@@ -25,7 +25,7 @@ public class PerfectLink implements Link, FLLObserver {
 
     private FairLossLink fll;
 
-    private PLObserver plObserver = null;
+    private PerfectLinkObserver perfectLinkObserver = null;
 
     public PerfectLink(int port) throws SocketException, BadIPException, UnreadableFileException {
         this.fll = new FairLossLink(port);
@@ -34,37 +34,43 @@ public class PerfectLink implements Link, FLLObserver {
         thread.start();
     }
 
-    public void registerObserver(PLObserver plObserver) {
-        this.plObserver = plObserver;
+    public void registerObserver(PerfectLinkObserver perfectLinkObserver) {
+        this.perfectLinkObserver = perfectLinkObserver;
     }
 
     public boolean hasObserver() {
-        return this.plObserver != null;
+        return this.perfectLinkObserver != null;
     }
 
     @Override
-    public void send(Packet dest) throws IOException {
-        int processId = dest.getProcessId();
+    public void send(Message message, int destID) throws IOException {
         int seqNum;
 
         //TODO: to be discussed: does this work/ is this necessary
         synchronized (sentProcessIds) {
-            if (!sentProcessIds.containsKey(processId)) {
-                sentProcessIds.put(processId, 0);
+            if (!sentProcessIds.containsKey(destID)) {
+                sentProcessIds.put(destID, 0);
             }
-            seqNum = sentProcessIds.get(processId) + 1;
+            seqNum = sentProcessIds.get(destID) + 1;
 
-            sentProcessIds.replace(processId, seqNum);
+            sentProcessIds.replace(destID, seqNum);
 
         }
-        dest.getMessage().setId(seqNum);
+        message.setMessageSequenceNumber(seqNum);
 
         Thread thread = new Thread(() -> {
             while (true) {
                 try {
-                    fll.send(dest);
+                    fll.send(message, destID);
+                    Thread.sleep(1000);
                 } catch (IOException e) {
                     //TODO: logger, then continue sending
+                } catch (BadIPException e) {
+                    e.printStackTrace();
+                } catch (UnreadableFileException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -75,12 +81,12 @@ public class PerfectLink implements Link, FLLObserver {
 
 
     @Override
-    public void deliverFLL(Packet received) {
+    public void deliverFLL(Packet received) throws BadIPException, IOException, UnreadableFileException {
         Message message = received.getMessage();
         int senderId = received.getProcessId();
-        if (message.isAck() && sentMapping.containsKey(message.getId())) {
-            sentMapping.get(message.getId()).interrupt();
-            sentMapping.remove(message.getId());
+        if (message.isAck() && sentMapping.containsKey(message.getMessageSequenceNumber())) {
+            sentMapping.get(message.getMessageSequenceNumber()).interrupt();
+            sentMapping.remove(message.getMessageSequenceNumber());
             return;
         }
 
@@ -88,10 +94,10 @@ public class PerfectLink implements Link, FLLObserver {
         if (!alreadyDeliveredPackets.keySet().contains(senderId)) {
             alreadyDeliveredPackets.put(senderId, new ReceivedMessages());
         }
-        if (!alreadyDeliveredPackets.get(senderId).contains(received.getMessage().getId())) {
-            alreadyDeliveredPackets.get(senderId).add(received.getMessage().getId());
+        if (!alreadyDeliveredPackets.get(senderId).contains(received.getMessage().getMessageSequenceNumber())) {
+            alreadyDeliveredPackets.get(senderId).add(received.getMessage().getMessageSequenceNumber());
             if (hasObserver()) {
-                plObserver.deliverPL(received);
+                perfectLinkObserver.deliverPL(received);
             }
         }
 
@@ -99,14 +105,17 @@ public class PerfectLink implements Link, FLLObserver {
 
     private void acknowledge(Packet received) {
 
-        int receivedId = received.getMessage().getId();
+        int receivedId = received.getMessage().getMessageSequenceNumber();
         int senderId = received.getProcessId();
         Message ack = new Message(true, receivedId);
-        Packet ackPacket = new Packet(ack, senderId);
         try {
-            fll.send(ackPacket);
+            fll.send(ack, senderId);
         } catch (IOException e) {
             //TODO:logger then move on
+        } catch (BadIPException e) {
+            e.printStackTrace();
+        } catch (UnreadableFileException e) {
+            e.printStackTrace();
         }
     }
 

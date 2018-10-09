@@ -4,7 +4,7 @@ import data.Message;
 import data.Packet;
 import exception.BadIPException;
 import exception.UnreadableFileException;
-import observer.PLObserver;
+import observer.PerfectLinkObserver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ public class PerfectLinksTest {
     private static final int IN_PORT = 11001;
     private static final int OUT_PORT = 11002;
 
-    private class TestObserver implements PLObserver {
+    private class TestObserver implements PerfectLinkObserver {
 
         private Packet delivered;
 
@@ -44,9 +44,8 @@ public class PerfectLinksTest {
             PerfectLink link = new PerfectLink(11004);
 
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, 3);
 
-            link.send(packet);
+            link.send(message, 3);
 
             link.finalize();
 
@@ -80,7 +79,7 @@ public class PerfectLinksTest {
 
             Message message = new Message(0, "Hello World");
             Packet packet = new Packet(message, 2);
-            sender.send(packet);
+            sender.send(message, 2);
 
             //Wait for delivery
             Thread.sleep(1000);
@@ -89,7 +88,7 @@ public class PerfectLinksTest {
 
             Assertions.assertFalse(received.isEmpty());
             Assertions.assertEquals("Hello World", received.getMessage().getMessage());
-            Assertions.assertEquals(1, received.getMessage().getId());
+            Assertions.assertEquals(1, received.getMessage().getMessageSequenceNumber());
 
             sender.finalize();
             receiver.finalize();

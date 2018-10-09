@@ -22,8 +22,7 @@ public class FairLossLinksTest {
             FairLossLink fairLossLink = new FairLossLink(8004);
 
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, 2);
-            fairLossLink.send(packet);
+            fairLossLink.send(message, 2);
 
             fairLossLink.finalize();
 
@@ -50,13 +49,12 @@ public class FairLossLinksTest {
             FairLossLink receiver = new FairLossLink(OUT_PORT);
 
             Message message = new Message(0, "Hello World");
-            Packet packet = new Packet(message, 2);
-            sender.send(packet);
+            sender.send(message, 2);
 
             Packet received = receiver.receive();
             Assertions.assertFalse(received.isEmpty());
             Assertions.assertEquals(received.getMessage().getMessage(), "Hello World");
-            Assertions.assertEquals(received.getMessage().getId(), 0);
+            Assertions.assertEquals(received.getMessage().getMessageSequenceNumber(), 0);
 
             sender.finalize();
             receiver.finalize();
