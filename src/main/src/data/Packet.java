@@ -1,5 +1,7 @@
 package src.data;
 
+import src.data.message.Message;
+
 public class Packet {
 
     private boolean empty;
@@ -26,10 +28,6 @@ public class Packet {
 
     public int getProcessId() {
         return processId;
-    }
-
-    public void setProcessId(int processId) {
-        this.processId = processId;
     }
 
     public boolean isEmpty() {

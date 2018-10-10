@@ -3,20 +3,21 @@ package src.broadcast;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import src.broadcast.BEBroadcast;
 import src.data.*;
+import src.data.message.BroadcastMessage;
+import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
 import java.io.IOException;
 import java.net.SocketException;
-import src.observer.BestEffortBroadcastObserver;
-import src.observer.UniformBroadcastObserver;
+
+import src.observer.broadcast.UniformBroadcastObserver;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UniformBroadcastTest {
+class UniformBroadcastTest {
 
     private static final int PORT1 = 11001;
 
@@ -24,11 +25,11 @@ public class UniformBroadcastTest {
 
         private Packet delivered;
 
-        public TestObserver() {
+        TestObserver() {
             this.delivered = new Packet();
         }
 
-        public Packet getDelivered() {
+        Packet getDelivered() {
             return delivered;
         }
 
@@ -42,7 +43,7 @@ public class UniformBroadcastTest {
 
 
     @Test
-    public void testBroadcastAndReceive() {
+    void testBroadcastAndReceive() {
 
         UniformBroadcast sender = null;
 

@@ -1,4 +1,4 @@
-package src.data;
+package src.data.message;
 
 import javafx.util.Pair;
 

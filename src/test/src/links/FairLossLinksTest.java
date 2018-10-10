@@ -2,23 +2,23 @@ package src.links;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import src.data.Message;
+import src.data.message.Message;
 import src.data.Packet;
-import src.data.SimpleMessage;
+import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
 
 import java.io.IOException;
 import java.net.SocketException;
 
-public class FairLossLinksTest {
+class FairLossLinksTest {
 
     private static final int IN_PORT = 11001;
     private static final int OUT_PORT = 11002;
 
 
     @Test
-    public void sendWorks() {
+    void sendWorks() {
         try {
             FairLossLink fairLossLink = new FairLossLink(8004);
 
@@ -43,7 +43,7 @@ public class FairLossLinksTest {
     }
 
     @Test
-    public void receiveWorks() {
+    void receiveWorks() {
         try {
 
             FairLossLink sender = new FairLossLink(IN_PORT);

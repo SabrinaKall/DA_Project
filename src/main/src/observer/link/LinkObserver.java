@@ -1,4 +1,4 @@
-package src.observer;
+package src.observer.link;
 
 public interface LinkObserver {
 }

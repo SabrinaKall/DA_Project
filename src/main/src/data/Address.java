@@ -26,16 +26,8 @@ public class Address {
         return IP;
     }
 
-    public void setIP(InetAddress IP) {
-        this.IP = IP;
-    }
-
     public int getPort() {
         return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 
 
@@ -54,8 +46,7 @@ public class Address {
 
         Address address = (Address) o;
 
-        if (port != address.port) return false;
-        return IP.toString().equals(address.IP.toString());
+        return port == address.port && IP.equals(address.IP);
     }
 
     @Override

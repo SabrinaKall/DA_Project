@@ -1,6 +1,6 @@
 package src.links;
 
-import src.data.Message;
+import src.data.message.Message;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
 

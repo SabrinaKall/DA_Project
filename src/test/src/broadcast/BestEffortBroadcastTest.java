@@ -3,19 +3,18 @@ package src.broadcast;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import src.broadcast.BEBroadcast;
 import src.data.Packet;
-import src.data.SequenceMessage;
-import src.data.SimpleMessage;
+import src.data.message.SequenceMessage;
+import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
 import java.io.IOException;
 import java.net.SocketException;
-import src.observer.BestEffortBroadcastObserver;
+import src.observer.broadcast.BestEffortBroadcastObserver;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BestEffortBroadcastTest {
+class BestEffortBroadcastTest {
 
     private static final int PORT1 = 11001;
 
@@ -23,11 +22,11 @@ public class BestEffortBroadcastTest {
 
         private Packet delivered;
 
-        public TestObserver() {
+        TestObserver() {
             this.delivered = new Packet();
         }
 
-        public Packet getDelivered() {
+        Packet getDelivered() {
             return delivered;
         }
 
@@ -41,18 +40,18 @@ public class BestEffortBroadcastTest {
 
 
     @Test
-    public void testBroadcastAndReceive() {
+    void testBroadcastAndReceive() {
 
-        BEBroadcast sender = null;
+        BestEffortBroadcast sender = null;
 
-        List<BEBroadcast> receivers = new ArrayList<>();
+        List<BestEffortBroadcast> receivers = new ArrayList<>();
 
 
         try {
-            sender = new BEBroadcast(PORT1);
+            sender = new BestEffortBroadcast(PORT1);
 
             for(int i = 0; i < 4; ++i) {
-                receivers.add(new BEBroadcast(11002 + i));
+                receivers.add(new BestEffortBroadcast(11002 + i));
             }
         } catch (SocketException | BadIPException | UnreadableFileException e) {
             Assertions.fail(e.getMessage());

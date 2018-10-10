@@ -1,4 +1,4 @@
-package src.data;
+package src.data.message;
 
 import java.io.*;
 
@@ -8,8 +8,8 @@ public class SimpleMessage extends Message implements Serializable {
 
     private String text;
 
-    public SimpleMessage(String whatever) {
-        this.text = whatever;
+    public SimpleMessage(String text) {
+        this.text = text;
     }
 
     public String getText() {

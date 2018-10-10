@@ -1,12 +1,11 @@
 package src.links;
 
-import src.data.Message;
+import src.data.message.Message;
 import src.data.Packet;
-import src.data.SimpleMessage;
+import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
-import src.links.PerfectLink;
-import src.observer.PerfectLinkObserver;
+import src.observer.link.PerfectLinkObserver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +13,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-public class PerfectLinksTest {
+class PerfectLinksTest {
 
     private static final int IN_PORT = 11001;
     private static final int OUT_PORT = 11002;
@@ -23,7 +22,7 @@ public class PerfectLinksTest {
 
         private Packet delivered;
 
-        public TestObserver() {
+        TestObserver() {
             this.delivered = new Packet();
         }
 
@@ -34,13 +33,13 @@ public class PerfectLinksTest {
             }
         }
 
-        public Packet getDelivered() {
+        Packet getDelivered() {
             return delivered;
         }
     }
 
     @Test
-    public void sendWorks() {
+    void sendWorks() {
         try {
 
             PerfectLink link = new PerfectLink(11004);
@@ -71,7 +70,7 @@ public class PerfectLinksTest {
 
 
     @Test
-    public void receiveWorks() {
+    void receiveWorks() {
         try {
             PerfectLink sender = new PerfectLink(IN_PORT);
             PerfectLink receiver = new PerfectLink(OUT_PORT);

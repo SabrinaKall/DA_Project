@@ -6,10 +6,10 @@ import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
 import src.info.Memberships;
 
-public class MembershipTest {
+class MembershipTest {
 
     @Test
-    public void containsID (){
+    void containsID(){
         Address address1 = null;
         try {
             address1 = Memberships.getAddress(1);
@@ -22,7 +22,7 @@ public class MembershipTest {
     }
 
     @Test
-    public void containsAddress(){
+    void containsAddress(){
         int id = -1;
         try {
             id = Memberships.getProcessId(new Address("127.0.0.1", 11003));
@@ -33,7 +33,7 @@ public class MembershipTest {
     }
 
     @Test
-    public void nbProcesses() {
+    void nbProcesses() {
         try {
             Assertions.assertEquals(5, Memberships.getNbProcesses());
         } catch (UnreadableFileException | BadIPException e) {

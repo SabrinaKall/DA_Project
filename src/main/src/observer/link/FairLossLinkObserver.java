@@ -1,4 +1,4 @@
-package src.observer;
+package src.observer.link;
 
 import src.data.Packet;
 import src.exception.UnreadableFileException;

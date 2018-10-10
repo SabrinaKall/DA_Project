@@ -1,24 +1,24 @@
 package src.broadcast;
 
 
-import src.data.Message;
+import src.data.message.Message;
 import src.data.Packet;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
 import src.info.Memberships;
 import src.links.PerfectLink;
-import src.observer.BestEffortBroadcastObserver;
-import src.observer.PerfectLinkObserver;
+import src.observer.broadcast.BestEffortBroadcastObserver;
+import src.observer.link.PerfectLinkObserver;
 
 import java.io.IOException;
 import java.net.SocketException;
 
-public class BEBroadcast implements PerfectLinkObserver {
+public class BestEffortBroadcast implements PerfectLinkObserver {
 
     private PerfectLink link;
     private BestEffortBroadcastObserver observer;
 
-    public BEBroadcast(int port) throws SocketException, BadIPException, UnreadableFileException {
+    public BestEffortBroadcast(int port) throws SocketException, BadIPException, UnreadableFileException {
         this.link = new PerfectLink(port);
         this.link.registerObserver(this);
 

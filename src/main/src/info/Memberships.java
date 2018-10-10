@@ -20,12 +20,6 @@ public class Memberships {
     private static Map<Integer, Address> memberships_by_id;
     private static Map<Address, Integer> memberships_by_address;
 
-    private static Memberships ourInstance = new Memberships();
-
-    public static Memberships getInstance() {
-        return ourInstance;
-    }
-
     public static int getNbProcesses() throws UnreadableFileException, BadIPException {
         if(!isLoaded) {
             readMemberships();

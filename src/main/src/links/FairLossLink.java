@@ -1,12 +1,12 @@
 package src.links;
 
 import src.data.Address;
-import src.data.Message;
+import src.data.message.Message;
 import src.data.Packet;
 import src.exception.UnreadableFileException;
 import src.exception.BadIPException;
 import src.info.Memberships;
-import src.observer.FairLossLinkObserver;
+import src.observer.link.FairLossLinkObserver;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

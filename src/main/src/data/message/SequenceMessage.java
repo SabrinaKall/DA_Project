@@ -1,4 +1,4 @@
-package src.data;
+package src.data.message;
 
 public class SequenceMessage extends Message {
 
@@ -22,8 +22,5 @@ public class SequenceMessage extends Message {
         return messageSequenceNumber;
     }
 
-    public void setMessageSequenceNumber(int messageSequenceNumber) {
-        this.messageSequenceNumber = messageSequenceNumber;
-    }
 }
 

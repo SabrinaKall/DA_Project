@@ -2,24 +2,23 @@ package src.broadcast;
 
 import javafx.util.Pair;
 import src.data.Address;
-import src.data.BroadcastMessage;
-import src.data.Message;
+import src.data.message.BroadcastMessage;
+import src.data.message.Message;
 import src.data.Packet;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
-import src.observer.BestEffortBroadcastObserver;
-import src.observer.UniformBroadcastObserver;
 import src.info.Memberships;
+import src.observer.broadcast.BestEffortBroadcastObserver;
+import src.observer.broadcast.UniformBroadcastObserver;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.*;
 
 public class UniformBroadcast implements BestEffortBroadcastObserver {
 
-    private BEBroadcast beBroadcast;
+    private BestEffortBroadcast bestEffortBroadcast;
     private UniformBroadcastObserver observer;
     private int myID;
     private int seqNumberCounter = 0;
@@ -28,14 +27,12 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     private Set<Pair<Integer, Integer>> forward = new HashSet<>();
     private Map<Pair<Integer, Integer>, Set<Integer>> acks = new HashMap<>();
 
-    private Map<Integer, Integer> sentProcessIds = new TreeMap<>();
-
     //Note: IP has to be looked up by user, depending on what is in membership file
     public UniformBroadcast(String myIP, int port) throws SocketException,
             BadIPException, UnreadableFileException, UnknownHostException {
-        this.beBroadcast = new BEBroadcast(port);
+        this.bestEffortBroadcast = new BestEffortBroadcast(port);
         this.myID = Memberships.getProcessId(new Address(myIP, port));
-        this.beBroadcast.registerObserver(this);
+        this.bestEffortBroadcast.registerObserver(this);
 
     }
 
@@ -51,7 +48,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
 
         int seqNum = ++seqNumberCounter;
         Message mNew = new BroadcastMessage(message, seqNum, myID);
-        beBroadcast.broadcast(mNew);
+        bestEffortBroadcast.broadcast(mNew);
 
     }
 
@@ -76,7 +73,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
 
         if(!forward.contains(uniqueMessageID)) {
             forward.add(uniqueMessageID);
-            beBroadcast.broadcast(message);
+            bestEffortBroadcast.broadcast(message);
         }
 
         if (canDeliver(message)) {
@@ -101,7 +98,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
 
     @Override
     protected void finalize() throws Throwable {
-        beBroadcast.finalize();
+        bestEffortBroadcast.finalize();
     }
 }
 

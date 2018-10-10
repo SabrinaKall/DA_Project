@@ -1,6 +1,5 @@
 package src.data;
 
-import src.data.ReceivedMessages;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,13 +7,13 @@ import org.junit.jupiter.api.Test;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class ReceivedMessagesTest {
+class ReceivedMessageHistoryTest {
 
-    private ReceivedMessages testObject;
+    private ReceivedMessageHistory testObject;
 
     @BeforeEach
-    public void init() {
-        this.testObject = new ReceivedMessages();
+    void init() {
+        this.testObject = new ReceivedMessageHistory();
 
         SortedSet<Integer> set = new TreeSet<>();
         set.add(4);
@@ -27,7 +26,7 @@ public class ReceivedMessagesTest {
     }
 
     @Test
-    public void containsWorks() {
+    void containsWorks() {
         Assertions.assertTrue(testObject.contains(1));
         Assertions.assertTrue(testObject.contains(3));
         Assertions.assertFalse(testObject.contains(5));
@@ -35,17 +34,17 @@ public class ReceivedMessagesTest {
     }
 
     @Test
-    public void smallerMessageReceived() {
+    void smallerMessageReceived() {
 
-        ReceivedMessages receivedMessages = new ReceivedMessages();
-        receivedMessages.setSmallest(3);
+        ReceivedMessageHistory receivedMessageHistory = new ReceivedMessageHistory();
+        receivedMessageHistory.setSmallest(3);
 
-        Assertions.assertTrue(receivedMessages.contains(1));
+        Assertions.assertTrue(receivedMessageHistory.contains(1));
 
     }
 
     @Test
-    public void addWorks() {
+    void addWorks() {
 
         testObject.add(2);
 
