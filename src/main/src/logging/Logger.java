@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Logger {
 
@@ -11,6 +13,9 @@ public class Logger {
 
     private int processID;
     private String filepath;
+
+    //do not write to file immediately (constantly opening the file waste of time) -> save in list
+    private List<String> tempLogs = new ArrayList<>();
 
     public Logger(int processID) {
         this.processID = processID;
@@ -27,11 +32,7 @@ public class Logger {
     }
 
     private void log(String message) {
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(filepath, true))) {
-            writer.write(messageWithEndline(message));
-        } catch (IOException e) {
-            //java.exception handling left as an exercise for the reader
-        }
+        tempLogs.add(message);
     }
 
     private String messageWithEndline(String message) {
@@ -48,5 +49,20 @@ public class Logger {
 
     public void logDelivery(int sender, int seqNr) {
         log("d " + sender + " " + seqNr + "\n");
+    }
+
+    //Before shutdown, write all saved logs to file
+    public void writeToFile() {
+        List<String> written = new ArrayList<>();
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(filepath, true))) {
+            for(String message: tempLogs) {
+                writer.write(messageWithEndline(message));
+                written.add(message);
+            }
+        } catch (IOException e) {
+            //java.exception handling left as an exercise for the reader
+            tempLogs.removeAll(written);
+        }
+        tempLogs.removeAll(written);
     }
 }
