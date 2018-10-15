@@ -20,22 +20,22 @@ class PerfectLinksTest {
 
     private class TestObserver implements PerfectLinkObserver {
 
-        private Packet delivered;
-
-        TestObserver() {
-            this.delivered = new Packet();
-        }
+        private boolean delivered = false;
+        private Message message;
+        private int senderID;
 
         @Override
-        public void deliverPL(Packet p) {
-            if (p != null && this.delivered.isEmpty()) {
-                this.delivered = p;
+        public void deliverPL(Message msg, int senderID) {
+            if (!delivered) {
+                this.delivered = true;
+                this.message = msg;
+                this.senderID = senderID;
             }
         }
 
-        Packet getDelivered() {
-            return delivered;
-        }
+        public Message getMessage() { return message; }
+        public int getSenderID() { return senderID; }
+        public boolean isDelivered() { return delivered; }
     }
 
     @Test
@@ -84,11 +84,11 @@ class PerfectLinksTest {
             //Wait for delivery
             Thread.sleep(1000);
 
-            Packet received = testObserver.getDelivered();
+            Assertions.assertTrue(testObserver.isDelivered());
 
-            SimpleMessage receivedMessage = (SimpleMessage) received.getMessage();
+            Assertions.assertEquals(1, testObserver.getSenderID());
 
-            Assertions.assertFalse(received.isEmpty());
+            SimpleMessage receivedMessage = (SimpleMessage) testObserver.getMessage();
             Assertions.assertEquals("Hello World", receivedMessage.getText());
 
             sender.finalize();

@@ -42,14 +42,14 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
 
 
     @Override
-    public void deliverPL(Packet p) throws UnreadableFileException, IOException, BadIPException {
+    public void deliverPL(Message msg, int senderID) throws UnreadableFileException, IOException, BadIPException {
         if(hasObserver()) {
-            observer.deliverBEB(p);
+            observer.deliverBEB(msg, senderID);
         }
     }
 
     @Override
-    protected void finalize() throws Throwable {
+    protected void finalize() {
         link.finalize();
     }
 }

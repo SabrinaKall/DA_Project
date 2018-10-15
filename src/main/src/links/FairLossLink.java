@@ -84,7 +84,7 @@ public class FairLossLink implements Link, Runnable {
 
             if (hasObserver()) {
                 try {
-                    this.obsFLL.deliverFLL(p);
+                    this.obsFLL.deliverFLL(p.getMessage(), p.getProcessId());
                 } catch (BadIPException e) {
                     e.printStackTrace();
                 } catch (IOException e) {

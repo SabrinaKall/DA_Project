@@ -53,32 +53,32 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     }
 
     @Override
-    public void deliverBEB(Packet p) throws IOException, BadIPException, UnreadableFileException {
+    public void deliverBEB(Message msg, int senderID) throws IOException, BadIPException, UnreadableFileException {
 
-        if(p == null || p.isEmpty() || p.getMessage() == null) {
+        if(msg == null) { //necessary?
             return;
         }
 
-        BroadcastMessage message = (BroadcastMessage) p.getMessage();
+        BroadcastMessage messageBM = (BroadcastMessage) msg;
 
 
-        Pair<Integer, Integer> uniqueMessageID = message.getUniqueIdentifier();
+        Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
 
 
         if(!acks.keySet().contains(uniqueMessageID)) {
             acks.put(uniqueMessageID, new HashSet<>());
         }
 
-        acks.get(uniqueMessageID).add(p.getProcessId());
+        acks.get(uniqueMessageID).add(senderID);
 
         if(!forward.contains(uniqueMessageID)) {
             forward.add(uniqueMessageID);
-            bestEffortBroadcast.broadcast(message);
+            bestEffortBroadcast.broadcast(messageBM);
         }
 
-        if (canDeliver(message)) {
+        if (canDeliver(messageBM)) {
             if(hasObserver()) {
-                observer.deliverReliably(p);
+                observer.deliverReliably(messageBM.getMessage(), senderID);
             }
             delivered.add(uniqueMessageID);
         }
@@ -97,7 +97,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     }
 
     @Override
-    protected void finalize() throws Throwable {
+    protected void finalize() {
         bestEffortBroadcast.finalize();
     }
 }

@@ -55,15 +55,15 @@ public class ReliableBroadcast implements BestEffortBroadcastObserver{
     }
 
     @Override
-    public void deliverBEB(Packet p) throws IOException, BadIPException, UnreadableFileException {
-        BroadcastMessage message = (BroadcastMessage) p.getMessage();
+    public void deliverBEB(Message msg, int senderID) throws IOException, BadIPException, UnreadableFileException {
+        BroadcastMessage message = (BroadcastMessage) msg;
         int originalSenderID = message.getOriginalSenderID();
         if(!delivered.keySet().contains(originalSenderID)) {
             delivered.put(originalSenderID, new ReceivedMessageHistory());
         }
         if(!delivered.get(originalSenderID).contains(message.getMessageSequenceNumber())) {
             delivered.get(originalSenderID).add(message.getMessageSequenceNumber());
-            observer.deliverReliably(p);
+            observer.deliverReliably(message.getMessage(), senderID);
             bestEffortBroadcast.broadcast(message);
         }
 

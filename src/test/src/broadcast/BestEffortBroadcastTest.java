@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import src.data.Packet;
+import src.data.message.Message;
 import src.data.message.SequenceMessage;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
@@ -20,22 +21,22 @@ class BestEffortBroadcastTest {
 
     private class TestObserver implements BestEffortBroadcastObserver {
 
-        private Packet delivered;
-
-        TestObserver() {
-            this.delivered = new Packet();
-        }
-
-        Packet getDelivered() {
-            return delivered;
-        }
+        private boolean delivered = false;
+        private Message message;
+        private int senderID;
 
         @Override
-        public void deliverBEB(Packet p) throws IOException, BadIPException, UnreadableFileException {
-            if (p != null && this.delivered.isEmpty()) {
-                this.delivered = p;
+        public void deliverBEB(Message msg, int senderID) {
+            if (!delivered) {
+                this.delivered = true;
+                this.message = msg;
+                this.senderID = senderID;
             }
         }
+
+        public Message getMessage() { return message; }
+        public int getSenderID() { return senderID; }
+        public boolean isDelivered() { return delivered; }
     }
 
 
@@ -80,9 +81,10 @@ class BestEffortBroadcastTest {
 
 
         for(int i = 0; i < 4; ++i) {
-            Packet p = receiverObservers.get(i).getDelivered();
-            Assertions.assertFalse(p.isEmpty());
-            SequenceMessage m = (SequenceMessage) p.getMessage();
+            TestObserver obs = receiverObservers.get(i);
+            Assertions.assertTrue(obs.isDelivered());
+
+            SequenceMessage m = (SequenceMessage) obs.getMessage();
             SimpleMessage contained = (SimpleMessage) m.getMessage();
             int seqNum = m.getMessageSequenceNumber();
             Assertions.assertEquals(1, seqNum);

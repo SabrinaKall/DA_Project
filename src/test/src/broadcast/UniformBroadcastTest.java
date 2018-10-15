@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import src.data.*;
 import src.data.message.BroadcastMessage;
+import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
@@ -23,23 +24,24 @@ class UniformBroadcastTest {
 
     private class TestObserver implements UniformBroadcastObserver {
 
-        private Packet delivered;
-
-        TestObserver() {
-            this.delivered = new Packet();
-        }
-
-        Packet getDelivered() {
-            return delivered;
-        }
+        private boolean delivered = false;
+        private Message message;
+        private int senderID;
 
         @Override
-        public void deliverReliably(Packet p) {
-            if (p != null && this.delivered.isEmpty()) {
-                this.delivered = p;
+        public void deliverReliably(Message msg, int senderID) {
+            if (!delivered) {
+                this.delivered = true;
+                this.message = msg;
+                this.senderID = senderID;
             }
         }
+
+        public Message getMessage() { return message; }
+        public int getSenderID() { return senderID; }
+        public boolean isDelivered() { return delivered; }
     }
+
 
 
     @Test
@@ -87,9 +89,10 @@ class UniformBroadcastTest {
 
 
         for(int i = 0; i < 4; ++i) {
-            Packet p = receiverObservers.get(i).getDelivered();
-            Assertions.assertFalse(p.isEmpty());
-            BroadcastMessage m = (BroadcastMessage) p.getMessage();
+            TestObserver obs = receiverObservers.get(i);
+            Assertions.assertTrue(obs.isDelivered());
+
+            BroadcastMessage m = (BroadcastMessage) obs.getMessage();
             int seqNum = m.getMessageSequenceNumber();
             int originalsender = m.getOriginalSenderID();
 

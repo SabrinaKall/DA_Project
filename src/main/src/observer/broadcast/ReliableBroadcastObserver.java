@@ -1,7 +1,7 @@
 package src.observer.broadcast;
 
-import src.data.Packet;
+import src.data.message.Message;
 
 public interface ReliableBroadcastObserver {
-    void deliverReliably(Packet p);
+    void deliverReliably(Message msg, int senderID);
 }

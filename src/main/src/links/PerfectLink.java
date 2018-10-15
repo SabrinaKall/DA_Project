@@ -80,37 +80,35 @@ public class PerfectLink implements Link, FairLossLinkObserver {
 
 
     @Override
-    public void deliverFLL(Packet received) throws BadIPException, IOException, UnreadableFileException {
-        PerfectLinkMessage message = (PerfectLinkMessage) received.getMessage();
-        int senderId = received.getProcessId();
-        if (message.isAck() && sentMapping.containsKey(message.getMessageSequenceNumber())) {
-            sentMapping.get(message.getMessageSequenceNumber()).interrupt();
-            sentMapping.remove(message.getMessageSequenceNumber());
+    public void deliverFLL(Message msg, int senderID) throws BadIPException, IOException, UnreadableFileException {
+        PerfectLinkMessage messagePL = (PerfectLinkMessage) msg;
+
+        if (messagePL.isAck() && sentMapping.containsKey(messagePL.getMessageSequenceNumber())) {
+            sentMapping.get(messagePL.getMessageSequenceNumber()).interrupt();
+            sentMapping.remove(messagePL.getMessageSequenceNumber());
             return;
         }
 
-        acknowledge(received);
+        acknowledge(messagePL, senderID);
         //if process never messaged us before, init in map
-        if (!alreadyDeliveredPackets.keySet().contains(senderId)) {
-            alreadyDeliveredPackets.put(senderId, new ReceivedMessageHistory());
+        if (!alreadyDeliveredPackets.keySet().contains(senderID)) {
+            alreadyDeliveredPackets.put(senderID, new ReceivedMessageHistory());
         }
-        if (!alreadyDeliveredPackets.get(senderId).contains(message.getMessageSequenceNumber())) {
-            alreadyDeliveredPackets.get(senderId).add(message.getMessageSequenceNumber());
+        if (!alreadyDeliveredPackets.get(senderID).contains(messagePL.getMessageSequenceNumber())) {
+            alreadyDeliveredPackets.get(senderID).add(messagePL.getMessageSequenceNumber());
             if (hasObserver()) {
-                Message unwrapped = ((PerfectLinkMessage) received.getMessage()).getMessage();
-                perfectLinkObserver.deliverPL(new Packet(unwrapped, received.getProcessId()));
+                Message unwrapped = messagePL.getMessage();
+                perfectLinkObserver.deliverPL(unwrapped, senderID);
             }
         }
 
     }
 
-    private void acknowledge(Packet received) {
-        PerfectLinkMessage message = (PerfectLinkMessage) received.getMessage();
-        int receivedSeqNum = message.getMessageSequenceNumber();
-        int senderId = received.getProcessId();
+    private void acknowledge(PerfectLinkMessage messagePL, int senderID) {
+        int receivedSeqNum = messagePL.getMessageSequenceNumber();
         PerfectLinkMessage ack = new PerfectLinkMessage(null, receivedSeqNum, true);
         try {
-            fll.send(ack, senderId);
+            fll.send(ack, senderID);
         } catch (IOException e) {
             //TODO:logger then move on
         } catch (BadIPException e) {
