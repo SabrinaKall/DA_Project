@@ -97,8 +97,7 @@ public class FairLossLink implements Link, Runnable {
     }
 
 
-    @Override
-    public void finalize() {
+    public void shutdown() {
         socket.close();
     }
 }

@@ -1,6 +1,7 @@
 package src.data.message;
 
 import java.io.*;
+import java.util.Objects;
 
 public class SimpleMessage extends Message implements Serializable {
 
@@ -14,5 +15,19 @@ public class SimpleMessage extends Message implements Serializable {
 
     public String getText() {
         return text;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof SimpleMessage)) {
+            return false;
+        }
+        SimpleMessage msg = (SimpleMessage) o;
+        return (msg.text).equals(text);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(text);
     }
 }

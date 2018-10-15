@@ -78,7 +78,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
 
         if (canDeliver(messageBM)) {
             if(hasObserver()) {
-                observer.deliverReliably(messageBM.getMessage(), senderID);
+                observer.deliverReliably(messageBM.getMessage(), messageBM.getOriginalSenderID());
             }
             delivered.add(uniqueMessageID);
         }
@@ -96,9 +96,8 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
 
     }
 
-    @Override
-    protected void finalize() {
-        bestEffortBroadcast.finalize();
+    public void shutdown() {
+        bestEffortBroadcast.shutdown();
     }
 }
 

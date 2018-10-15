@@ -29,6 +29,8 @@ public class Logger {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        prepareGracefulTermination();
     }
 
     private void log(String message) {
@@ -65,4 +67,10 @@ public class Logger {
         }
         tempLogs.removeAll(written);
     }
+
+
+    private void prepareGracefulTermination() {
+        Runtime.getRuntime().addShutdownHook(new Thread(this::writeToFile));
+    }
+
 }

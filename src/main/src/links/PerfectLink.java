@@ -45,7 +45,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     }
 
     @Override
-    public void send(Message message, int destID) throws IOException {
+    public void send(Message message, int destID) {
         int seqNum;
 
         //TODO: to be discussed: does this work/ is this necessary
@@ -64,12 +64,15 @@ public class PerfectLink implements Link, FairLossLinkObserver {
             while (true) {
                 try {
                     fll.send(mNew, destID);
+                    Thread.sleep(1000);
                 } catch (IOException e) {
                     //TODO: logger, then continue sending
                 } catch (BadIPException e) {
                     e.printStackTrace();
                 } catch (UnreadableFileException e) {
                     e.printStackTrace();
+                } catch (InterruptedException e) {
+                    break;
                 }
             }
         });
@@ -118,12 +121,11 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         }
     }
 
-    @Override
-    public void finalize() {
+    public void shutdown() {
         for (int process : sentMapping.keySet()) {
             sentMapping.get(process).interrupt();
         }
         thread.interrupt();
-        fll.finalize();
+        fll.shutdown();
     }
 }

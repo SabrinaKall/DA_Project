@@ -3,7 +3,6 @@ package src.broadcast;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import src.data.*;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
@@ -20,7 +19,16 @@ import java.util.List;
 
 class UniformBroadcastTest {
 
-    private static final int PORT1 = 11001;
+
+    private static final int SENDER_PORT = 11001;
+    private static final int SENDER_ID = 1;
+    private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
+
+    private static final String MSG_TEXT = "Hello World";
+    private static final Message SIMPLE_MSG = new SimpleMessage(MSG_TEXT);
+    private static final int MSG_SEQ_NUM = 2;
+    private static final BroadcastMessage BROADCAST_MESSAGE =
+            new BroadcastMessage(SIMPLE_MSG, MSG_SEQ_NUM, SENDER_ID);
 
     private class TestObserver implements UniformBroadcastObserver {
 
@@ -37,9 +45,9 @@ class UniformBroadcastTest {
             }
         }
 
-        public Message getMessage() { return message; }
-        public int getSenderID() { return senderID; }
-        public boolean isDelivered() { return delivered; }
+        Message getMessage() { return message; }
+        int getSenderID() { return senderID; }
+        boolean isDelivered() { return delivered; }
     }
 
 
@@ -55,10 +63,10 @@ class UniformBroadcastTest {
 
 
         try {
-            sender = new UniformBroadcast(testIP, PORT1);
+            sender = new UniformBroadcast(testIP, SENDER_PORT);
 
-            for(int i = 0; i < 4; ++i) {
-                receivers.add(new UniformBroadcast(testIP,11002 + i));
+            for(int port : RECEIVER_PORTS) {
+                receivers.add(new UniformBroadcast(testIP,port));
             }
         } catch (SocketException | BadIPException | UnreadableFileException | UnknownHostException e) {
             Assertions.fail(e.getMessage());
@@ -66,16 +74,14 @@ class UniformBroadcastTest {
 
         List<TestObserver> receiverObservers = new ArrayList<>();
 
-        for(int i = 0; i < 4; ++i) {
+        for(UniformBroadcast urb : receivers) {
             TestObserver observer = new TestObserver();
-            receivers.get(i).registerObserver(observer);
             receiverObservers.add(observer);
+            urb.registerObserver(observer);
         }
 
         try {
-            SimpleMessage inner = new SimpleMessage("Hello World");
-            BroadcastMessage broadcastMessage = new BroadcastMessage(inner, 2, 1);
-            sender.broadcast(broadcastMessage);
+            sender.broadcast(BROADCAST_MESSAGE);
         } catch (BadIPException | IOException | UnreadableFileException e) {
             Assertions.fail(e.getMessage());
         }
@@ -88,30 +94,22 @@ class UniformBroadcastTest {
         }
 
 
-        for(int i = 0; i < 4; ++i) {
-            TestObserver obs = receiverObservers.get(i);
+        for(TestObserver obs : receiverObservers) {
             Assertions.assertTrue(obs.isDelivered());
 
+            Assertions.assertEquals(SENDER_ID, obs.getSenderID());
+
             BroadcastMessage m = (BroadcastMessage) obs.getMessage();
-            int seqNum = m.getMessageSequenceNumber();
-            int originalsender = m.getOriginalSenderID();
 
-            while (!m.getMessage().getClass().equals(SimpleMessage.class)) {
-                m = (BroadcastMessage) m.getMessage();
-                seqNum = m.getMessageSequenceNumber();
-            }
-
-            SimpleMessage contained = (SimpleMessage) m.getMessage();
-
-            Assertions.assertEquals(2, seqNum);
-            Assertions.assertEquals(1, originalsender);
-            Assertions.assertEquals("Hello World", contained.getText());
+            Assertions.assertEquals(SIMPLE_MSG, m.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM, m.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID, m.getOriginalSenderID());
         }
 
         try {
-            sender.finalize();
-            for(int i = 0; i < 4; ++i) {
-                receivers.get(i).finalize();
+            sender.shutdown();
+            for(UniformBroadcast urb : receivers) {
+                urb.shutdown();
             }
         } catch (Throwable throwable) {
             throwable.printStackTrace();

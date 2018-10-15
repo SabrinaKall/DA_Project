@@ -1,7 +1,6 @@
 package src.links;
 
 import src.data.message.Message;
-import src.data.Packet;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
@@ -9,14 +8,16 @@ import src.observer.link.PerfectLinkObserver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 
 class PerfectLinksTest {
 
-    private static final int IN_PORT = 11001;
-    private static final int OUT_PORT = 11002;
+    private static final int SENDER_PORT = 11001;
+    private static final int SENDER_ID = 1;
+    private static final int DESTINATION_PORT = 11002;
+    private static final int DESTINATION_ID = 2;
+    private static final String MSG_TEXT = "Hello World";
+    private static final Message SIMPLE_MSG = new SimpleMessage(MSG_TEXT);
 
     private class TestObserver implements PerfectLinkObserver {
 
@@ -33,33 +34,25 @@ class PerfectLinksTest {
             }
         }
 
-        public Message getMessage() { return message; }
-        public int getSenderID() { return senderID; }
-        public boolean isDelivered() { return delivered; }
+        Message getMessage() { return message; }
+        int getSenderID() { return senderID; }
+        boolean isDelivered() { return delivered; }
     }
 
     @Test
     void sendWorks() {
         try {
 
-            PerfectLink link = new PerfectLink(11004);
+            PerfectLink link = new PerfectLink(SENDER_PORT);
 
-            Message message = new SimpleMessage("Hello World");
+            link.send(SIMPLE_MSG, DESTINATION_ID);
 
-            link.send(message, 3);
+            link.shutdown();
 
-            link.finalize();
-
-        } catch (UnknownHostException e) {
-            Assertions.fail("UnknownHostException thrown");
-            e.printStackTrace();
         } catch (SocketException e) {
             Assertions.fail("SocketException thrown");
             e.printStackTrace();
-        } catch (IOException e) {
-            Assertions.fail("IOException thrown");
-            e.printStackTrace();
-        } catch (BadIPException e) {
+        }  catch (BadIPException e) {
             Assertions.fail("BadIpException thrown");
             e.printStackTrace();
         } catch (UnreadableFileException e) {
@@ -72,37 +65,27 @@ class PerfectLinksTest {
     @Test
     void receiveWorks() {
         try {
-            PerfectLink sender = new PerfectLink(IN_PORT);
-            PerfectLink receiver = new PerfectLink(OUT_PORT);
+            PerfectLink sender = new PerfectLink(SENDER_PORT);
+            PerfectLink receiver = new PerfectLink(DESTINATION_PORT);
 
             TestObserver testObserver = new TestObserver();
             receiver.registerObserver(testObserver);
 
-            Message message = new SimpleMessage( "Hello World");
-            sender.send(message, 2);
+            sender.send(SIMPLE_MSG, DESTINATION_ID);
 
             //Wait for delivery
             Thread.sleep(1000);
 
             Assertions.assertTrue(testObserver.isDelivered());
+            Assertions.assertEquals(SENDER_ID, testObserver.getSenderID());
+            Assertions.assertEquals(SIMPLE_MSG, testObserver.getMessage());
 
-            Assertions.assertEquals(1, testObserver.getSenderID());
-
-            SimpleMessage receivedMessage = (SimpleMessage) testObserver.getMessage();
-            Assertions.assertEquals("Hello World", receivedMessage.getText());
-
-            sender.finalize();
-            receiver.finalize();
+            sender.shutdown();
+            receiver.shutdown();
 
 
-        } catch (UnknownHostException e) {
-            Assertions.fail("UnknownHostException thrown");
-            e.printStackTrace();
         } catch (SocketException e) {
             Assertions.fail("SocketException thrown");
-            e.printStackTrace();
-        } catch (IOException e) {
-            Assertions.fail("IOException thrown");
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();

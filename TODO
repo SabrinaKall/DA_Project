@@ -1,5 +1,6 @@
 - Delete unused packets from tests
 - Reverse order in send (message, messageSequenceNumber)
 - Wrap exceptions for each class maybe ?
-- Add signal catching, interrupt handling
+- Add signal catching, interrupt handling -> have done this for SIGTERM && SIGINT, still untested (check logger)
+(missing for USR2, ask teachers due to java problem)
 - Testing
