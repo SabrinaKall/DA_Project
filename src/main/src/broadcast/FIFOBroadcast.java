@@ -123,6 +123,11 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
     public void shutdown() {
         bestEffortBroadcast.shutdown();
     }
+
+    @Override
+    protected void finalize() throws Throwable {
+        shutdown();
+    }
 }
 
 

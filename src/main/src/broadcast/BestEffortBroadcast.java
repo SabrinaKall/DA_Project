@@ -49,4 +49,9 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
     public void shutdown() {
         link.shutdown();
     }
+
+    @Override
+    protected void finalize() throws Throwable {
+        shutdown();
+    }
 }

@@ -22,12 +22,12 @@ class BestEffortBroadcastTest {
     private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
 
     private static final String MSG_TEXT_1 = "Hello World 1";
-    private static final Message SIMPLE_MSG_1 = new SimpleMessage(MSG_TEXT_1);
+    private static final SimpleMessage SIMPLE_MSG_1 = new SimpleMessage(MSG_TEXT_1);
     private static final int MSG_SEQ_NUM_1 = 1;
     private static final SequenceMessage SEQ_MSG_1 = new SequenceMessage(SIMPLE_MSG_1, MSG_SEQ_NUM_1);
 
     private static final String MSG_TEXT_2 = "Hello World 2";
-    private static final Message SIMPLE_MSG_2 = new SimpleMessage(MSG_TEXT_2);
+    private static final SimpleMessage SIMPLE_MSG_2 = new SimpleMessage(MSG_TEXT_2);
     private static final int MSG_SEQ_NUM_2 = 2;
     private static final SequenceMessage SEQ_MSG_2 = new SequenceMessage(SIMPLE_MSG_2, MSG_SEQ_NUM_2);
 
@@ -106,11 +106,19 @@ class BestEffortBroadcastTest {
             SequenceMessage m1 = (SequenceMessage) messages.get(0);
             SequenceMessage m2 = (SequenceMessage) messages.get(1);
 
+
             List<Integer> actualSeqNb = Arrays.asList(m1.getMessageSequenceNumber(), m2.getMessageSequenceNumber());
             List<Integer> wantedSeqNb = Arrays.asList(MSG_SEQ_NUM_1, MSG_SEQ_NUM_2);
 
             for(int seq : wantedSeqNb) {
                 Assertions.assertTrue(actualSeqNb.contains(seq));
+            }
+
+            List<SimpleMessage> actualSeqMsg = Arrays.asList((SimpleMessage)m1.getMessage(),(SimpleMessage) m2.getMessage());
+            List<SimpleMessage> wantedSeqMsg = Arrays.asList(SIMPLE_MSG_1,SIMPLE_MSG_2);
+
+            for(SimpleMessage msg : wantedSeqMsg) {
+                Assertions.assertTrue(actualSeqMsg.contains(msg));
             }
 
         }

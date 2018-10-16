@@ -128,4 +128,9 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         thread.interrupt();
         fll.shutdown();
     }
+
+    @Override
+    protected void finalize() throws Throwable {
+        shutdown();
+    }
 }

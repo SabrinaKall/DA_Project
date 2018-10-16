@@ -10,10 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 class PerfectLinksTest {
 
@@ -24,10 +21,10 @@ class PerfectLinksTest {
 
 
     private static final String MSG_TEXT_1 = "Hello World 1";
-    private static final Message SIMPLE_MSG_1 = new SimpleMessage(MSG_TEXT_1);
+    private static final SimpleMessage SIMPLE_MSG_1 = new SimpleMessage(MSG_TEXT_1);
 
     private static final String MSG_TEXT_2 = "Hello World 2";
-    private static final Message SIMPLE_MSG_2 = new SimpleMessage(MSG_TEXT_2);
+    private static final SimpleMessage SIMPLE_MSG_2 = new SimpleMessage(MSG_TEXT_2);
 
 
     private class TestObserver implements PerfectLinkObserver {
@@ -73,8 +70,15 @@ class PerfectLinksTest {
             List<Message> messages = testObserver.getMessagesDelivered(SENDER_ID);
             Assertions.assertEquals(2, messages.size());
 
-            Assertions.assertEquals(SIMPLE_MSG_1, messages.get(0));
-            Assertions.assertEquals(SIMPLE_MSG_2, messages.get(1));
+            Message m1 = messages.get(0);
+            Message m2 = messages.get(1);
+
+            List<Message> actualSeqMsg = Arrays.asList(m1,m2);
+            List<SimpleMessage> wantedSeqMsg = Arrays.asList(SIMPLE_MSG_1,SIMPLE_MSG_2);
+
+            for(SimpleMessage msg : wantedSeqMsg) {
+                Assertions.assertTrue(actualSeqMsg.contains(msg));
+            }
 
             sender.shutdown();
             receiver.shutdown();

@@ -1,6 +1,9 @@
 package src.broadcast;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
@@ -10,7 +13,6 @@ import src.observer.broadcast.FIFOBroadcastObserver;
 
 import java.io.IOException;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,17 +29,17 @@ public class FIFOBroadcastTest {
     private static final String MSG_TEXT_3 = "Hello World 3";
 
     private static final Message SIMPLE_MSG_1 = new SimpleMessage(MSG_TEXT_1);
-    private static final int MSG_SEQ_NUM_1 = 2;
+    private static final int MSG_SEQ_NUM_1 = 1;
     private static final BroadcastMessage BROADCAST_MESSAGE_1 =
             new BroadcastMessage(SIMPLE_MSG_1, MSG_SEQ_NUM_1, SENDER_ID);
 
     private static final Message SIMPLE_MSG_2 = new SimpleMessage(MSG_TEXT_2);
-    private static final int MSG_SEQ_NUM_2 = 3;
+    private static final int MSG_SEQ_NUM_2 = 2;
     private static final BroadcastMessage BROADCAST_MESSAGE_2 =
             new BroadcastMessage(SIMPLE_MSG_2, MSG_SEQ_NUM_2, SENDER_ID);
 
     private static final Message SIMPLE_MSG_3 = new SimpleMessage(MSG_TEXT_3);
-    private static final int MSG_SEQ_NUM_3 = 4;
+    private static final int MSG_SEQ_NUM_3 = 3;
     private static final BroadcastMessage BROADCAST_MESSAGE_3 =
             new BroadcastMessage(SIMPLE_MSG_3, MSG_SEQ_NUM_3, SENDER_ID);
 
@@ -54,7 +56,6 @@ public class FIFOBroadcastTest {
         }
 
         boolean hasDelivered(int sender) {
-            System.out.println(messages);
             return messages.containsKey(sender);
         }
 
@@ -83,7 +84,7 @@ public class FIFOBroadcastTest {
             for(int port : RECEIVER_PORTS) {
                 receivers.add(new FIFOBroadcast(testIP,port));
             }
-        } catch (SocketException | BadIPException | UnreadableFileException | UnknownHostException e) {
+        } catch (SocketException | BadIPException | UnreadableFileException e) {
             Assertions.fail("Exception thrown: " + e.getMessage());
         }
 
@@ -119,12 +120,7 @@ public class FIFOBroadcastTest {
             Assertions.fail(e.getMessage());
         }
 
-        //Wait for delivery
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Assertions.fail(e.getMessage());
-        }
+        waitForDelivery(1);
 
 
         for(TestObserver obs : receiverObservers) {
@@ -152,13 +148,7 @@ public class FIFOBroadcastTest {
         } catch (BadIPException | IOException | UnreadableFileException e) {
             Assertions.fail(e.getMessage());
         }
-
-        //Wait for delivery
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Assertions.fail(e.getMessage());
-        }
+        waitForDelivery(3);
 
 
         for(TestObserver obs : receiverObservers) {
@@ -191,4 +181,31 @@ public class FIFOBroadcastTest {
         }
 
     }
+
+    private void waitForDelivery(int nbMessagesAwaited) {
+        int maxTime = 10000;
+        //Wait for delivery
+        boolean allReceived = false;
+        int waited = 0;
+        while (!allReceived && waited < maxTime) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Assertions.fail(e.getMessage());
+            }
+            waited += 100;
+            allReceived = true;
+            for(TestObserver obs : receiverObservers) {
+                if(!(obs.hasDelivered(SENDER_ID) && obs.getMessagesDelivered(SENDER_ID).size() == nbMessagesAwaited)) {
+                    allReceived = false;
+                }
+            }
+
+        }
+
+        if(waited >= maxTime && !allReceived) {
+            Assertions.fail("Failed to get messages in under 5 seconds");
+        }
+    }
+
 }
