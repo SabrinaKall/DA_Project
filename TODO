@@ -1,5 +1,4 @@
 - Create executable (makefile)
-- Delete unused packets from tests
 - Reverse order in send (message, messageSequenceNumber)
 - Wrap exceptions for each class maybe ?
 - Add signal catching, interrupt handling
