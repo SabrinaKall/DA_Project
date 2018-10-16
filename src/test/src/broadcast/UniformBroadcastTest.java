@@ -37,7 +37,7 @@ class UniformBroadcastTest {
         private int senderID;
 
         @Override
-        public void deliverReliably(Message msg, int senderID) {
+        public void deliverURB(Message msg, int senderID) {
             if (!delivered) {
                 this.delivered = true;
                 this.message = msg;

@@ -39,31 +39,9 @@ class PerfectLinksTest {
         boolean isDelivered() { return delivered; }
     }
 
-    @Test
-    void sendWorks() {
-        try {
-
-            PerfectLink link = new PerfectLink(SENDER_PORT);
-
-            link.send(SIMPLE_MSG, DESTINATION_ID);
-
-            link.shutdown();
-
-        } catch (SocketException e) {
-            Assertions.fail("SocketException thrown");
-            e.printStackTrace();
-        }  catch (BadIPException e) {
-            Assertions.fail("BadIpException thrown");
-            e.printStackTrace();
-        } catch (UnreadableFileException e) {
-            Assertions.fail("UnreadableFileException thrown");
-            e.printStackTrace();
-        }
-    }
-
 
     @Test
-    void receiveWorks() {
+    void testSendAndReceive() {
         try {
             PerfectLink sender = new PerfectLink(SENDER_PORT);
             PerfectLink receiver = new PerfectLink(DESTINATION_PORT);
