@@ -13,27 +13,24 @@ import src.observer.broadcast.FIFOBroadcastObserver;
 
 import java.io.IOException;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.*;
 
 public class FIFOBroadcast implements BestEffortBroadcastObserver {
-
     private BestEffortBroadcast bestEffortBroadcast;
     private FIFOBroadcastObserver observer;
     private int myID;
     private int seqNumberCounter = 0;
     private int nbProcesses;
 
-    private Set<Pair<Integer, Integer>> delivered = new HashSet<>();
-    private Set<Pair<Integer, Integer>> forward = new HashSet<>();
+    private Map<Integer, Integer> highestDeliveredPerProcess = new HashMap<>();
+    private Map<Integer, ReceivedMessageHistory> receivedMessagesPerProcess = new HashMap<>();
     private Map<Pair<Integer, Integer>, Set<Integer>> acks = new HashMap<>();
+    private Map<Pair<Integer, Integer>, BroadcastMessage> pendingMessages = new HashMap<>();
+    private Set<Pair<Integer, Integer>> forwardedMessages = new HashSet<>();
 
-    private Map<Integer, ReceivedMessageHistory> fifoOrderingsWIPname = new HashMap<>();
-    private Map<Integer, Integer> highestDelivered = new HashMap<>();
-    private Map<Pair<Integer, Integer>, BroadcastMessage> pending = new HashMap<>();
 
     public FIFOBroadcast(String myIP, int port) throws SocketException,
-            BadIPException, UnreadableFileException, UnknownHostException {
+            BadIPException, UnreadableFileException {
         this.bestEffortBroadcast = new BestEffortBroadcast(port);
         this.myID = Memberships.getProcessId(new Address(myIP, port));
         this.bestEffortBroadcast.registerObserver(this);
@@ -49,7 +46,6 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
     }
 
     public void broadcast(Message message) throws BadIPException, UnreadableFileException, IOException {
-
         int seqNum = ++seqNumberCounter;
         Message mNew = new BroadcastMessage(message, seqNum, myID);
         bestEffortBroadcast.broadcast(mNew);
@@ -57,8 +53,7 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
     }
 
     @Override
-    public void deliverBEB(Message msg, int senderID) throws IOException, BadIPException, UnreadableFileException {
-
+    public void deliverBEB(Message msg, int senderID) throws BadIPException, UnreadableFileException {
         if(msg == null) { //necessary?
             return;
         }
@@ -66,81 +61,63 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
         BroadcastMessage messageBM = (BroadcastMessage) msg;
 
         addAcknowledgement(messageBM, senderID);
-
         echoMessage(messageBM);
-
-        FIFOSTUFFSTART(senderID, messageBM);
-
         addPending(messageBM);
+        deliverPendingMessages(messageBM.getOriginalSenderID());
 
-        fifoDeliverLoopWIPname(senderID);
-
-    }
-
-    private void addPending(BroadcastMessage messageBM) {
-        Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
-        pending.put(uniqueMessageID, messageBM);
     }
 
     private void addAcknowledgement(BroadcastMessage messageBM, int senderID) {
         Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
-        if(!acks.keySet().contains(uniqueMessageID)) {
-            acks.put(uniqueMessageID, new HashSet<>());
-        }
+        acks.putIfAbsent(uniqueMessageID, new HashSet<>());
         acks.get(uniqueMessageID).add(senderID);
     }
 
     private void echoMessage(BroadcastMessage messageBM) throws BadIPException, UnreadableFileException {
         Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
-        if(!forward.contains(uniqueMessageID)) {
-            forward.add(uniqueMessageID);
+        if(forwardedMessages.add(uniqueMessageID)) {
             bestEffortBroadcast.broadcast(messageBM);
         }
     }
 
-    private void FIFOSTUFFSTART(int senderID, BroadcastMessage messageBM) {
-        if (!fifoOrderingsWIPname.keySet().contains(senderID)) {
-            fifoOrderingsWIPname.put(senderID, new ReceivedMessageHistory());
-        }
-        if (!fifoOrderingsWIPname.get(senderID).contains(messageBM.getMessageSequenceNumber())) {
-            fifoOrderingsWIPname.get(senderID).add(messageBM.getMessageSequenceNumber());
-        }
+    private void addPending(BroadcastMessage messageBM) {
+        receivedMessagesPerProcess.putIfAbsent(messageBM.getOriginalSenderID(), new ReceivedMessageHistory());
+        receivedMessagesPerProcess.get(messageBM.getOriginalSenderID()).add(messageBM.getMessageSequenceNumber());
+        pendingMessages.put(messageBM.getUniqueIdentifier(), messageBM);
     }
 
-    private void fifoDeliverLoopWIPname(int senderID) {
-        ReceivedMessageHistory messageHistory = fifoOrderingsWIPname.get(senderID);
-        for (int i=getHighestDelivered(senderID); i <= messageHistory.getSmallest(); i++) {
-            Pair<Integer, Integer> uniqueMessageID = new Pair<>(senderID, i);
-            BroadcastMessage messageBM = pending.get(uniqueMessageID);
+    private int getHighestDelivered(int senderID) {
+        highestDeliveredPerProcess.putIfAbsent(senderID, 0);
+        return highestDeliveredPerProcess.get(senderID);
+    }
+
+    private void deliverPendingMessages(int senderID) {
+        ReceivedMessageHistory messageHistory = receivedMessagesPerProcess.get(senderID);
+        for (int seqID = getHighestDelivered(senderID)+1; seqID <= messageHistory.getSmallest(); seqID++) {
+            BroadcastMessage messageBM = pendingMessages.remove(new Pair<>(senderID, seqID));
             if (canDeliver(messageBM)) {
-                setHighestDelivered(senderID, i);
-                if(hasObserver()) {
-                    observer.deliverFIFOB(messageBM.getMessage(), messageBM.getOriginalSenderID());
-                }
-                delivered.add(uniqueMessageID);
-                pending.remove(uniqueMessageID);
+                deliver(messageBM);
+            } else {
+                return;
             }
         }
     }
 
-    private int getHighestDelivered(int senderID) {
-        if (!highestDelivered.keySet().contains(senderID)) {
-            highestDelivered.put(senderID, 0);
+    private void deliver(BroadcastMessage messageBM) {
+        highestDeliveredPerProcess.put(messageBM.getOriginalSenderID(), messageBM.getMessageSequenceNumber());
+        if(hasObserver()) {
+            observer.deliverFIFOB(messageBM.getMessage(), messageBM.getOriginalSenderID());
         }
-        return highestDelivered.get(senderID);
     }
 
-    private void setHighestDelivered(int senderID, int value) {
-        highestDelivered.put(senderID, value);
-    }
 
     private boolean canDeliver(BroadcastMessage message) {
-        Pair<Integer, Integer> uniqueID = message.getUniqueIdentifier();
+        if (message == null) return false;
 
-        Set<Integer> deliveringProcesses = acks.get(uniqueID);
+        Set<Integer> deliveringProcesses = acks.get(message.getUniqueIdentifier());
 
         return (deliveringProcesses.size() > this.nbProcesses/2.0) &&
-                (message.getOriginalSenderID() > highestDelivered.get(uniqueID.getKey()));
+                (message.getMessageSequenceNumber() > getHighestDelivered(message.getOriginalSenderID()));
     }
 
     public void shutdown() {
