@@ -2,7 +2,6 @@ package src.broadcast;
 
 
 import src.data.message.Message;
-import src.data.Packet;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
 import src.info.Memberships;
@@ -21,7 +20,6 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
     public BestEffortBroadcast(int port) throws SocketException, BadIPException, UnreadableFileException {
         this.link = new PerfectLink(port);
         this.link.registerObserver(this);
-
     }
 
     public void registerObserver(BestEffortBroadcastObserver observer) {
@@ -32,7 +30,7 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
         return this.observer != null;
     }
 
-    public void broadcast(Message message) throws BadIPException, UnreadableFileException, IOException {
+    public void broadcast(Message message) throws BadIPException, UnreadableFileException {
         int nbProcesses = Memberships.getNbProcesses();
 
         for(int id = 1; id <= nbProcesses; ++id) {
@@ -42,14 +40,13 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
 
 
     @Override
-    public void deliverPL(Packet p) throws UnreadableFileException, IOException, BadIPException {
+    public void deliverPL(Message msg, int senderID) throws UnreadableFileException, IOException, BadIPException {
         if(hasObserver()) {
-            observer.deliverBEB(p);
+            observer.deliverBEB(msg, senderID);
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        link.finalize();
+    public void shutdown() {
+        link.shutdown();
     }
 }

@@ -3,12 +3,13 @@ package src.broadcast;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import src.data.Packet;
+import src.data.message.Message;
 import src.data.message.SequenceMessage;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
-import java.io.IOException;
+
+import java.net.InetAddress;
 import java.net.SocketException;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 import java.util.ArrayList;
@@ -16,26 +17,34 @@ import java.util.List;
 
 class BestEffortBroadcastTest {
 
-    private static final int PORT1 = 11001;
+    private static final int SENDER_PORT = 11001;
+    private static final int SENDER_ID = 1;
+    private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
+
+    private static final String MSG_TEXT = "Hello World";
+    private static final Message SIMPLE_MSG = new SimpleMessage(MSG_TEXT);
+    private static final int MSG_SEQ_NUM = 1;
+    private static final SequenceMessage SEQ_MSG =
+            new SequenceMessage(SIMPLE_MSG, MSG_SEQ_NUM);
 
     private class TestObserver implements BestEffortBroadcastObserver {
 
-        private Packet delivered;
-
-        TestObserver() {
-            this.delivered = new Packet();
-        }
-
-        Packet getDelivered() {
-            return delivered;
-        }
+        private boolean delivered = false;
+        private Message message;
+        private int senderID;
 
         @Override
-        public void deliverBEB(Packet p) throws IOException, BadIPException, UnreadableFileException {
-            if (p != null && this.delivered.isEmpty()) {
-                this.delivered = p;
+        public void deliverBEB(Message msg, int senderID) {
+            if (!delivered) {
+                this.delivered = true;
+                this.message = msg;
+                this.senderID = senderID;
             }
         }
+
+        Message getMessage() { return message; }
+        int getSenderID() { return senderID; }
+        boolean isDelivered() { return delivered; }
     }
 
 
@@ -48,10 +57,10 @@ class BestEffortBroadcastTest {
 
 
         try {
-            sender = new BestEffortBroadcast(PORT1);
+            sender = new BestEffortBroadcast(SENDER_PORT);
 
-            for(int i = 0; i < 4; ++i) {
-                receivers.add(new BestEffortBroadcast(11002 + i));
+            for(int port : RECEIVER_PORTS) {
+                receivers.add(new BestEffortBroadcast(port));
             }
         } catch (SocketException | BadIPException | UnreadableFileException e) {
             Assertions.fail(e.getMessage());
@@ -59,15 +68,15 @@ class BestEffortBroadcastTest {
 
         List<TestObserver> receiverObservers = new ArrayList<>();
 
-        for(int i = 0; i < 4; ++i) {
+        for(BestEffortBroadcast beb : receivers) {
             TestObserver observer = new TestObserver();
-            receivers.get(i).registerObserver(observer);
             receiverObservers.add(observer);
+            beb.registerObserver(observer);
         }
 
         try {
-            sender.broadcast(new SequenceMessage(new SimpleMessage("Hello World"), 1));
-        } catch (BadIPException | IOException | UnreadableFileException e) {
+            sender.broadcast(SEQ_MSG);
+        } catch (BadIPException | UnreadableFileException e) {
             Assertions.fail(e.getMessage());
         }
 
@@ -79,20 +88,21 @@ class BestEffortBroadcastTest {
         }
 
 
-        for(int i = 0; i < 4; ++i) {
-            Packet p = receiverObservers.get(i).getDelivered();
-            Assertions.assertFalse(p.isEmpty());
-            SequenceMessage m = (SequenceMessage) p.getMessage();
-            SimpleMessage contained = (SimpleMessage) m.getMessage();
-            int seqNum = m.getMessageSequenceNumber();
-            Assertions.assertEquals(1, seqNum);
-            Assertions.assertEquals("Hello World", contained.getText());
+        for(TestObserver obs : receiverObservers) {
+
+            Assertions.assertTrue(obs.isDelivered());
+
+            Assertions.assertEquals(SENDER_ID, obs.getSenderID());
+
+            SequenceMessage m = (SequenceMessage) obs.getMessage();
+            Assertions.assertEquals(MSG_SEQ_NUM, m.getMessageSequenceNumber());
+            Assertions.assertEquals(SIMPLE_MSG, m.getMessage());
         }
 
         try {
-            sender.finalize();
-            for(int i = 0; i < 4; ++i) {
-                receivers.get(i).finalize();
+            sender.shutdown();
+            for(BestEffortBroadcast beb : receivers) {
+                beb.shutdown();
             }
         } catch (Throwable throwable) {
             throwable.printStackTrace();
