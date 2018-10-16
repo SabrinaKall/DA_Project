@@ -12,8 +12,8 @@ import src.exception.UnreadableFileException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import src.observer.broadcast.BestEffortBroadcastObserver;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.*;
 
 class BestEffortBroadcastTest {
 
@@ -21,30 +21,36 @@ class BestEffortBroadcastTest {
     private static final int SENDER_ID = 1;
     private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
 
-    private static final String MSG_TEXT = "Hello World";
-    private static final Message SIMPLE_MSG = new SimpleMessage(MSG_TEXT);
-    private static final int MSG_SEQ_NUM = 1;
-    private static final SequenceMessage SEQ_MSG =
-            new SequenceMessage(SIMPLE_MSG, MSG_SEQ_NUM);
+    private static final String MSG_TEXT_1 = "Hello World 1";
+    private static final Message SIMPLE_MSG_1 = new SimpleMessage(MSG_TEXT_1);
+    private static final int MSG_SEQ_NUM_1 = 1;
+    private static final SequenceMessage SEQ_MSG_1 = new SequenceMessage(SIMPLE_MSG_1, MSG_SEQ_NUM_1);
+
+    private static final String MSG_TEXT_2 = "Hello World 2";
+    private static final Message SIMPLE_MSG_2 = new SimpleMessage(MSG_TEXT_2);
+    private static final int MSG_SEQ_NUM_2 = 2;
+    private static final SequenceMessage SEQ_MSG_2 = new SequenceMessage(SIMPLE_MSG_2, MSG_SEQ_NUM_2);
+
 
     private class TestObserver implements BestEffortBroadcastObserver {
 
-        private boolean delivered = false;
-        private Message message;
-        private int senderID;
+        private Map<Integer, List<Message>> messages = new HashMap<>();
 
         @Override
         public void deliverBEB(Message msg, int senderID) {
-            if (!delivered) {
-                this.delivered = true;
-                this.message = msg;
-                this.senderID = senderID;
+            if(!messages.containsKey(senderID)) {
+                messages.put(senderID, new ArrayList<>());
             }
+            messages.get(senderID).add(msg);
         }
 
-        Message getMessage() { return message; }
-        int getSenderID() { return senderID; }
-        boolean isDelivered() { return delivered; }
+        boolean hasDelivered(int sender) {
+            return messages.containsKey(sender);
+        }
+
+        List<Message> getMessagesDelivered(int sender) {
+            return messages.get(sender);
+        }
     }
 
 
@@ -75,14 +81,15 @@ class BestEffortBroadcastTest {
         }
 
         try {
-            sender.broadcast(SEQ_MSG);
+            sender.broadcast(SEQ_MSG_1);
+            sender.broadcast(SEQ_MSG_2);
         } catch (BadIPException | UnreadableFileException e) {
             Assertions.fail(e.getMessage());
         }
 
         //Wait for delivery
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             Assertions.fail(e.getMessage());
         }
@@ -90,13 +97,22 @@ class BestEffortBroadcastTest {
 
         for(TestObserver obs : receiverObservers) {
 
-            Assertions.assertTrue(obs.isDelivered());
+            Assertions.assertTrue(obs.hasDelivered(SENDER_ID));
 
-            Assertions.assertEquals(SENDER_ID, obs.getSenderID());
+            List<Message> messages = obs.getMessagesDelivered(SENDER_ID);
 
-            SequenceMessage m = (SequenceMessage) obs.getMessage();
-            Assertions.assertEquals(MSG_SEQ_NUM, m.getMessageSequenceNumber());
-            Assertions.assertEquals(SIMPLE_MSG, m.getMessage());
+            Assertions.assertEquals(2, messages.size(), "Process" + obs);
+
+            SequenceMessage m1 = (SequenceMessage) messages.get(0);
+            SequenceMessage m2 = (SequenceMessage) messages.get(1);
+
+            List<Integer> actualSeqNb = Arrays.asList(m1.getMessageSequenceNumber(), m2.getMessageSequenceNumber());
+            List<Integer> wantedSeqNb = Arrays.asList(MSG_SEQ_NUM_1, MSG_SEQ_NUM_2);
+
+            for(int seq : wantedSeqNb) {
+                Assertions.assertTrue(actualSeqNb.contains(seq));
+            }
+
         }
 
         try {

@@ -1,7 +1,6 @@
 package src.broadcast;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
@@ -13,7 +12,9 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FIFOBroadcastTest {
 
@@ -21,43 +22,60 @@ public class FIFOBroadcastTest {
     private static final int SENDER_ID = 1;
     private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
 
-    private static final String MSG_TEXT = "Hello World";
-    private static final Message SIMPLE_MSG = new SimpleMessage(MSG_TEXT);
-    private static final int MSG_SEQ_NUM = 2;
-    private static final BroadcastMessage BROADCAST_MESSAGE =
-            new BroadcastMessage(SIMPLE_MSG, MSG_SEQ_NUM, SENDER_ID);
+    private static final String MSG_TEXT_1 = "Hello World 1";
+    private static final String MSG_TEXT_2 = "Hello World 2";
+    private static final String MSG_TEXT_3 = "Hello World 3";
+
+    private static final Message SIMPLE_MSG_1 = new SimpleMessage(MSG_TEXT_1);
+    private static final int MSG_SEQ_NUM_1 = 2;
+    private static final BroadcastMessage BROADCAST_MESSAGE_1 =
+            new BroadcastMessage(SIMPLE_MSG_1, MSG_SEQ_NUM_1, SENDER_ID);
+
+    private static final Message SIMPLE_MSG_2 = new SimpleMessage(MSG_TEXT_2);
+    private static final int MSG_SEQ_NUM_2 = 3;
+    private static final BroadcastMessage BROADCAST_MESSAGE_2 =
+            new BroadcastMessage(SIMPLE_MSG_2, MSG_SEQ_NUM_2, SENDER_ID);
+
+    private static final Message SIMPLE_MSG_3 = new SimpleMessage(MSG_TEXT_3);
+    private static final int MSG_SEQ_NUM_3 = 4;
+    private static final BroadcastMessage BROADCAST_MESSAGE_3 =
+            new BroadcastMessage(SIMPLE_MSG_3, MSG_SEQ_NUM_3, SENDER_ID);
 
     private class TestObserver implements FIFOBroadcastObserver {
 
-        private boolean delivered = false;
-        private Message message;
-        private int senderID;
+        private Map<Integer, List<BroadcastMessage>> messages = new HashMap<>();
 
         @Override
         public void deliverFIFOB(Message msg, int senderID) {
-            if (!delivered) {
-                this.delivered = true;
-                this.message = msg;
-                this.senderID = senderID;
+            if(!messages.containsKey(senderID)) {
+                messages.put(senderID, new ArrayList<>());
             }
+            messages.get(senderID).add((BroadcastMessage) msg);
         }
 
-        Message getMessage() { return message; }
-        int getSenderID() { return senderID; }
-        boolean isDelivered() { return delivered; }
+        boolean hasDelivered(int sender) {
+            System.out.println(messages);
+            return messages.containsKey(sender);
+        }
+
+        List<BroadcastMessage> getMessagesDelivered(int sender) {
+            return messages.get(sender);
+        }
+
     }
 
 
+    FIFOBroadcast sender;
+    List<FIFOBroadcast> receivers;
+    List<TestObserver> receiverObservers;
 
-    @Test
-    void simpleMessageWorks() {
+    @BeforeEach
+    void init() {
 
-        FIFOBroadcast sender = null;
-
-        List<FIFOBroadcast> receivers = new ArrayList<>();
+        sender = null;
+        receivers = new ArrayList<>();
 
         String testIP = "127.0.0.1";
-
 
         try {
             sender = new FIFOBroadcast(testIP, SENDER_PORT);
@@ -69,16 +87,34 @@ public class FIFOBroadcastTest {
             Assertions.fail("Exception thrown: " + e.getMessage());
         }
 
-        List<TestObserver> receiverObservers = new ArrayList<>();
+        receiverObservers = new ArrayList<>();
 
-        for(FIFOBroadcast urb : receivers) {
+        for(FIFOBroadcast fifoBroadcast : receivers) {
             TestObserver observer = new TestObserver();
             receiverObservers.add(observer);
-            urb.registerObserver(observer);
+            fifoBroadcast.registerObserver(observer);
         }
+    }
+
+    @AfterEach
+    public void breakDown() {
+        try {
+            sender.shutdown();
+            for(FIFOBroadcast fifoBroadcast : receivers) {
+                fifoBroadcast.shutdown();
+            }
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+
+
+    @Test
+    void simpleMessageWorks() {
 
         try {
-            sender.broadcast(BROADCAST_MESSAGE);
+            sender.broadcast(BROADCAST_MESSAGE_1);
         } catch (BadIPException | IOException | UnreadableFileException e) {
             Assertions.fail(e.getMessage());
         }
@@ -92,26 +128,67 @@ public class FIFOBroadcastTest {
 
 
         for(TestObserver obs : receiverObservers) {
-            Assertions.assertTrue(obs.isDelivered());
+            Assertions.assertTrue(obs.hasDelivered(SENDER_ID));
 
-            Assertions.assertEquals(SENDER_ID, obs.getSenderID());
+            List<BroadcastMessage> messages =  obs.getMessagesDelivered(SENDER_ID);
+            BroadcastMessage m = messages.get(0);
 
-            BroadcastMessage m = (BroadcastMessage) obs.getMessage();
-
-            Assertions.assertEquals(SIMPLE_MSG, m.getMessage());
-            Assertions.assertEquals(MSG_SEQ_NUM, m.getMessageSequenceNumber());
+            Assertions.assertNotNull(m);
+            Assertions.assertEquals(SIMPLE_MSG_1, m.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_1, m.getMessageSequenceNumber());
             Assertions.assertEquals(SENDER_ID, m.getOriginalSenderID());
         }
 
+
+    }
+
+    @Test
+    void orderedMessagesWork() {
+
         try {
-            sender.shutdown();
-            for(FIFOBroadcast fifoBroadcast : receivers) {
-                fifoBroadcast.shutdown();
-            }
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            sender.broadcast(BROADCAST_MESSAGE_1);
+            sender.broadcast(BROADCAST_MESSAGE_2);
+            sender.broadcast(BROADCAST_MESSAGE_3);
+        } catch (BadIPException | IOException | UnreadableFileException e) {
+            Assertions.fail(e.getMessage());
         }
 
+        //Wait for delivery
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Assertions.fail(e.getMessage());
+        }
+
+
+        for(TestObserver obs : receiverObservers) {
+            Assertions.assertTrue(obs.hasDelivered(SENDER_ID));
+
+            List<BroadcastMessage> messages =  obs.getMessagesDelivered(SENDER_ID);
+
+            Assertions.assertEquals(3, messages.size());
+
+            BroadcastMessage m1 = messages.get(0);
+            BroadcastMessage m2 = messages.get(1);
+            BroadcastMessage m3 = messages.get(2);
+
+            Assertions.assertNotNull(m1);
+            Assertions.assertEquals(SIMPLE_MSG_1, m1.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_1, m1.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID, m1.getOriginalSenderID());
+
+
+            Assertions.assertNotNull(m2);
+            Assertions.assertEquals(SIMPLE_MSG_2, m2.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_2, m2.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID, m2.getOriginalSenderID());
+
+
+            Assertions.assertNotNull(m3);
+            Assertions.assertEquals(SIMPLE_MSG_3, m3.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_3, m3.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID, m3.getOriginalSenderID());
+        }
 
     }
 }

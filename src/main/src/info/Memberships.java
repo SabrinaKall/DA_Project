@@ -37,8 +37,6 @@ public class Memberships {
     public static int getProcessId(Address address) throws UnreadableFileException, BadIPException {
         if(!isLoaded) {
             readMemberships();
-            System.out.println("Address: " + address);
-            System.out.println(memberships_by_address);
         }
         return memberships_by_address.get(address);
     }
