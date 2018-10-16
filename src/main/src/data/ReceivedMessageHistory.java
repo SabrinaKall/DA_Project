@@ -29,7 +29,9 @@ public class ReceivedMessageHistory {
         this.received = received;
     }
 
-    public void add(int newReceived) {
+    public boolean add(int newReceived) {
+        if(contains(newReceived))
+            return false;
 
         if (smallest + 1 == newReceived) {
             smallest = newReceived;
@@ -46,6 +48,7 @@ public class ReceivedMessageHistory {
         } else if (newReceived > smallest) {
             received.add(newReceived);
         }
+        return true;
     }
 
     public boolean contains(int newReceived) {
