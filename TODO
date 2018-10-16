@@ -4,3 +4,4 @@
 - Add signal catching, interrupt handling -> have done this for SIGTERM && SIGINT, still untested (check logger)
 (missing for USR2, ask teachers due to java problem)
 - Testing
+- Main
