@@ -63,7 +63,7 @@ public class ReliableBroadcast implements BestEffortBroadcastObserver{
         }
         if(!delivered.get(originalSenderID).contains(message.getMessageSequenceNumber())) {
             delivered.get(originalSenderID).add(message.getMessageSequenceNumber());
-            observer.deliverReliably(message.getMessage(), senderID);
+            observer.deliverRB(message.getMessage(), senderID);
             bestEffortBroadcast.broadcast(message);
         }
 

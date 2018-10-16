@@ -14,10 +14,10 @@ import java.net.SocketException;
 
 class FairLossLinksTest {
 
-    private static final int SENDER_PORT = 11001;
-    private static final int SENDER_ID = 1;
-    private static final int DESTINATION_PORT = 11002;
-    private static final int DESTINATION_ID = 2;
+    private static final int SENDER_PORT = 11003;
+    private static final int SENDER_ID = 3;
+    private static final int DESTINATION_PORT = 11004;
+    private static final int DESTINATION_ID = 4;
     private static final String MSG_TEXT = "Hello World";
     private static final Message SIMPLE_MSG = new SimpleMessage(MSG_TEXT);
 
@@ -40,30 +40,6 @@ class FairLossLinksTest {
             e.printStackTrace();
         } catch (BadIPException e) {
             Assertions.fail("BadIpException thrown");
-            e.printStackTrace();
-        }
-    }
-
-    @Test
-    void sendWorks() {
-        try {
-            FairLossLink fairLossLink = new FairLossLink(SENDER_PORT);
-
-            fairLossLink.send(SIMPLE_MSG, DESTINATION_ID);
-
-            fairLossLink.shutdown();
-
-        } catch (SocketException e) {
-            Assertions.fail("SocketException thrown");
-            e.printStackTrace();
-        } catch (IOException e) {
-            Assertions.fail("IOException thrown");
-            e.printStackTrace();
-        } catch (BadIPException e) {
-            Assertions.fail("BadIpException thrown");
-            e.printStackTrace();
-        } catch (UnreadableFileException e) {
-            Assertions.fail("UnreadableFileException thrown");
             e.printStackTrace();
         }
     }
