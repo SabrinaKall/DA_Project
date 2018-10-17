@@ -114,8 +114,6 @@ class UniformBroadcastTest {
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
-
-
     }
 }
 
