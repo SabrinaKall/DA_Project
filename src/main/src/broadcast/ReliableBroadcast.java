@@ -66,7 +66,5 @@ public class ReliableBroadcast implements BestEffortBroadcastObserver{
             observer.deliverRB(message.getMessage(), senderID);
             bestEffortBroadcast.broadcast(message);
         }
-
-
     }
 }

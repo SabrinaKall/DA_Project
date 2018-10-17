@@ -49,16 +49,18 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
         int seqNum = ++seqNumberCounter;
         Message mNew = new BroadcastMessage(message, seqNum, myID);
         bestEffortBroadcast.broadcast(mNew);
-
     }
 
-    @Override
+    /* only one thread can call deliverBEB, so it is sequential */
     public void deliverBEB(Message msg, int senderID) throws BadIPException, UnreadableFileException {
         if(msg == null) { //necessary?
             return;
         }
 
         BroadcastMessage messageBM = (BroadcastMessage) msg;
+        if (messageBM.getMessageSequenceNumber() <= getHighestDelivered(senderID)) {
+            return;
+        }
 
         addAcknowledgement(messageBM, senderID);
         echoMessage(messageBM);
@@ -106,6 +108,9 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
     private void deliver(BroadcastMessage messageBM) {
         highestDeliveredPerProcess.put(messageBM.getOriginalSenderID(), messageBM.getMessageSequenceNumber());
         if(hasObserver()) {
+            acks.remove(messageBM.getUniqueIdentifier());
+            forwardedMessages.remove(messageBM.getUniqueIdentifier());
+            pendingMessages.remove(messageBM.getUniqueIdentifier());
             observer.deliverFIFOB(messageBM.getMessage(), messageBM.getOriginalSenderID());
         }
     }
@@ -117,11 +122,16 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
         Set<Integer> deliveringProcesses = acks.get(message.getUniqueIdentifier());
 
         return (deliveringProcesses.size() > this.nbProcesses/2.0) &&
-                (message.getMessageSequenceNumber() > getHighestDelivered(message.getOriginalSenderID()));
+                (message.getMessageSequenceNumber() == getHighestDelivered(message.getOriginalSenderID()) + 1);
     }
 
     public void shutdown() {
         bestEffortBroadcast.shutdown();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        shutdown();
     }
 }
 
