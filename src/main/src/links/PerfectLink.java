@@ -110,9 +110,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     }
 
     public void shutdown() {
-        for (Thread thread : sentMapping.values()) {
-             thread.interrupt();
-        }
+        sentMapping.forEach((k, v) -> v.interrupt());
         threadFLLrun.interrupt();
         fll.shutdown();
     }
