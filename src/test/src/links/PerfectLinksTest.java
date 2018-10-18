@@ -85,15 +85,16 @@ class PerfectLinksTest {
 
 
         } catch (SocketException e) {
-            Assertions.fail("SocketException thrown");
+            Assertions.fail("SocketException thrown: " + e.getMessage());
             e.printStackTrace();
         } catch (InterruptedException e) {
+            Assertions.fail("InterruptedException thrown: " + e.getMessage());
             e.printStackTrace();
         } catch (BadIPException e) {
-            Assertions.fail("BadIpException thrown");
+            Assertions.fail("BadIpException thrown: " + e.getMessage());
             e.printStackTrace();
         } catch (UnreadableFileException e) {
-            Assertions.fail("UnreadableFileException thrown");
+            Assertions.fail("UnreadableFileException thrown: " + e.getMessage());
             e.printStackTrace();
         }
     }

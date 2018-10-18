@@ -87,11 +87,7 @@ class UniformBroadcastTest {
         }
 
         //Wait for delivery
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Assertions.fail(e.getMessage());
-        }
+       waitForDelivery(receiverObservers);
 
 
         for(TestObserver obs : receiverObservers) {
@@ -115,5 +111,35 @@ class UniformBroadcastTest {
             throwable.printStackTrace();
         }
     }
+
+    private void waitForDelivery(List<TestObserver> receiverObservers) {
+        int maxTime = 10000;
+        //Wait for delivery
+        boolean allReceived = false;
+        int waited = 0;
+        while (!allReceived && waited < maxTime) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Assertions.fail(e.getMessage());
+            }
+            waited += 100;
+            allReceived = true;
+            for(TestObserver obs : receiverObservers) {
+                if(!obs.isDelivered()) {
+                    allReceived = false;
+                }
+            }
+
+        }
+
+        if(waited >= maxTime && !allReceived) {
+
+            Assertions.fail("Failed to get messages in under "+maxTime/1000+" seconds");
+
+        }
+    }
+
+
 }
 

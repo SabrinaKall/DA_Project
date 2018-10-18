@@ -43,6 +43,7 @@ public class FIFOBroadcastTest {
     private static final BroadcastMessage BROADCAST_MESSAGE_3 =
             new BroadcastMessage(SIMPLE_MSG_3, MSG_SEQ_NUM_3, SENDER_ID);
 
+
     private class TestObserver implements FIFOBroadcastObserver {
 
         private Map<Integer, List<BroadcastMessage>> messages = new HashMap<>();
@@ -60,6 +61,9 @@ public class FIFOBroadcastTest {
         }
 
         List<BroadcastMessage> getMessagesDelivered(int sender) {
+            if(!messages.containsKey(sender)) {
+                return new ArrayList<>();
+            }
             return messages.get(sender);
         }
 
@@ -182,10 +186,55 @@ public class FIFOBroadcastTest {
 
     }
 
+    @Test
+    void unorderedMessagesWork() {
+
+        try {
+            sender.broadcast(BROADCAST_MESSAGE_3);
+            sender.broadcast(BROADCAST_MESSAGE_2);
+            sender.broadcast(BROADCAST_MESSAGE_1);
+        } catch (BadIPException | IOException | UnreadableFileException e) {
+            Assertions.fail(e.getMessage());
+        }
+        waitForDelivery(3);
+
+
+        for(TestObserver obs : receiverObservers) {
+            Assertions.assertTrue(obs.hasDelivered(SENDER_ID));
+
+            List<BroadcastMessage> messages =  obs.getMessagesDelivered(SENDER_ID);
+
+            Assertions.assertEquals(3, messages.size());
+
+            BroadcastMessage m1 = messages.get(0);
+            BroadcastMessage m2 = messages.get(1);
+            BroadcastMessage m3 = messages.get(2);
+
+            Assertions.assertNotNull(m1);
+            Assertions.assertEquals(SIMPLE_MSG_3, m1.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_3, m1.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID, m1.getOriginalSenderID());
+
+
+            Assertions.assertNotNull(m2);
+            Assertions.assertEquals(SIMPLE_MSG_2, m2.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_2, m2.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID, m2.getOriginalSenderID());
+
+
+            Assertions.assertNotNull(m3);
+            Assertions.assertEquals(SIMPLE_MSG_1, m3.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_1, m3.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID, m3.getOriginalSenderID());
+        }
+
+    }
+
     private void waitForDelivery(int nbMessagesAwaited) {
         int maxTime = 10000;
         //Wait for delivery
         boolean allReceived = false;
+        int min = nbMessagesAwaited;
         int waited = 0;
         while (!allReceived && waited < maxTime) {
             try {
@@ -195,16 +244,23 @@ public class FIFOBroadcastTest {
             }
             waited += 100;
             allReceived = true;
+            min = nbMessagesAwaited;
             for(TestObserver obs : receiverObservers) {
-                if(!(obs.hasDelivered(SENDER_ID) && obs.getMessagesDelivered(SENDER_ID).size() == nbMessagesAwaited)) {
+                int nbReceived = obs.getMessagesDelivered(SENDER_ID).size();
+                if(!(obs.hasDelivered(SENDER_ID) && nbReceived == nbMessagesAwaited)) {
                     allReceived = false;
+                    if(nbReceived < min) {
+                        min = nbReceived;
+                    }
                 }
             }
 
         }
 
         if(waited >= maxTime && !allReceived) {
-            Assertions.fail("Failed to get messages in under 5 seconds");
+
+            Assertions.fail("Failed to get messages in under "+maxTime/1000+" seconds: only got " + min + "/" + nbMessagesAwaited);
+
         }
     }
 
