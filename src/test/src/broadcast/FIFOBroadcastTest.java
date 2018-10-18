@@ -118,11 +118,7 @@ public class FIFOBroadcastTest {
     @Test
     void simpleMessageWorks() {
 
-        try {
-            sender.broadcast(BROADCAST_MESSAGE_1);
-        } catch (BadIPException | IOException | UnreadableFileException e) {
-            Assertions.fail(e.getMessage());
-        }
+        sender.broadcast(BROADCAST_MESSAGE_1);
 
         waitForDelivery(1);
 
@@ -145,13 +141,10 @@ public class FIFOBroadcastTest {
     @Test
     void orderedMessagesWork() {
 
-        try {
-            sender.broadcast(BROADCAST_MESSAGE_1);
-            sender.broadcast(BROADCAST_MESSAGE_2);
-            sender.broadcast(BROADCAST_MESSAGE_3);
-        } catch (BadIPException | IOException | UnreadableFileException e) {
-            Assertions.fail(e.getMessage());
-        }
+        sender.broadcast(BROADCAST_MESSAGE_1);
+        sender.broadcast(BROADCAST_MESSAGE_2);
+        sender.broadcast(BROADCAST_MESSAGE_3);
+
         waitForDelivery(3);
 
 

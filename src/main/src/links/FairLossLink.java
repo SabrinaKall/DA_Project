@@ -16,11 +16,13 @@ import java.net.SocketException;
 
 public class FairLossLink implements Link, Runnable {
 
+    private Memberships memberInfo;
     private DatagramSocket socket;
     private FairLossLinkObserver obsFLL = null;
 
     public FairLossLink(int port) throws SocketException, UnreadableFileException, BadIPException {
         this.socket = new DatagramSocket(port);
+        this.memberInfo = Memberships.getInstance();
     }
 
     public void registerObserver(FairLossLinkObserver obsFLL) {
@@ -34,10 +36,10 @@ public class FairLossLink implements Link, Runnable {
     }
 
     @Override
-    public void send(Message message, int destID) throws IOException, BadIPException, UnreadableFileException {
+    public void send(Message message, int destID) throws IOException {
 
         byte[] messageArray = message.convertToBytes();
-        Address destAddress = Memberships.getAddress(destID);
+        Address destAddress = this.memberInfo.getAddress(destID);
         DatagramPacket packet = new DatagramPacket(messageArray, messageArray.length,
                 destAddress.getIP(), destAddress.getPort());
 
@@ -45,7 +47,7 @@ public class FairLossLink implements Link, Runnable {
     }
 
 
-    public Packet receive() throws IOException, ClassNotFoundException, BadIPException, UnreadableFileException {
+    public Packet receive() throws IOException, ClassNotFoundException {
         //TODO: watch out for longer strings
         byte[] buffer = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -57,7 +59,7 @@ public class FairLossLink implements Link, Runnable {
         InetAddress senderIP = packet.getAddress();
         int senderPort = packet.getPort();
         Address address = new Address(senderIP, senderPort);
-        int processId = Memberships.getProcessId(address);
+        int processId = this.memberInfo.getProcessId(address);
         return new Packet(message, processId);
     }
 
@@ -65,44 +67,31 @@ public class FairLossLink implements Link, Runnable {
     public void run() {
         while (true) {
 
-            Packet p = null;
+            Packet p;
             try {
                 p = this.receive();
             } catch (IOException e) {
                 if (socket.isClosed()) {
                     return;
                 } else {
-                    //TODO: logger;
+                    System.err.println("FairLossLink::run: error when reading from socket. Ignoring...");
+                    e.printStackTrace();
+                    continue;
                 }
             } catch (ClassNotFoundException e) {
-                //TODO: logger
-            } catch (BadIPException e) {
+                System.err.println("FairLossLink::run: error converting received packet to local class. Ignoring...");
                 e.printStackTrace();
-            } catch (UnreadableFileException e) {
-                e.printStackTrace();
+                continue;
             }
 
             if (hasObserver()) {
-                try {
-                    this.obsFLL.deliverFLL(p.getMessage(), p.getProcessId());
-                } catch (BadIPException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (UnreadableFileException e) {
-                    e.printStackTrace();
-                }
+                /* Not worth threading this. The speedup is insignificant vs the network cost
+                * and it we avoid having to deal with concurrent 'deliver' calls on the observers
+                * (since they are called sequentially) making the code simpler */
+                this.obsFLL.deliverFLL(p.getMessage(), p.getProcessId());
             }
         }
     }
 
-
-    public void shutdown() {
-        socket.close();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        shutdown();
-    }
+    public void shutdown() { socket.close(); }
 }

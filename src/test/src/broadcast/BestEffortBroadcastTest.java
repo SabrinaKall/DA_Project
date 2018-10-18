@@ -80,12 +80,9 @@ class BestEffortBroadcastTest {
             beb.registerObserver(observer);
         }
 
-        try {
-            sender.broadcast(SEQ_MSG_1);
-            sender.broadcast(SEQ_MSG_2);
-        } catch (BadIPException | UnreadableFileException e) {
-            Assertions.fail(e.getMessage());
-        }
+        sender.broadcast(SEQ_MSG_1);
+        sender.broadcast(SEQ_MSG_2);
+
 
         //Wait for delivery
         try {

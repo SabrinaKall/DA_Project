@@ -68,7 +68,7 @@ class UniformBroadcastTest {
             for(int port : RECEIVER_PORTS) {
                 receivers.add(new UniformBroadcast(testIP,port));
             }
-        } catch (SocketException | BadIPException | UnreadableFileException | UnknownHostException e) {
+        } catch (SocketException | BadIPException | UnreadableFileException e) {
             Assertions.fail(e.getMessage());
         }
 
@@ -80,11 +80,9 @@ class UniformBroadcastTest {
             urb.registerObserver(observer);
         }
 
-        try {
-            sender.broadcast(BROADCAST_MESSAGE);
-        } catch (BadIPException | IOException | UnreadableFileException e) {
-            Assertions.fail(e.getMessage());
-        }
+
+        sender.broadcast(BROADCAST_MESSAGE);
+
 
         //Wait for delivery
        waitForDelivery(receiverObservers);

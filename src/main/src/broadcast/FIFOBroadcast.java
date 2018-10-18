@@ -14,12 +14,13 @@ import src.observer.broadcast.FIFOBroadcastObserver;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FIFOBroadcast implements BestEffortBroadcastObserver {
     private BestEffortBroadcast bestEffortBroadcast;
     private FIFOBroadcastObserver observer;
     private int myID;
-    private int seqNumberCounter = 0;
+    private AtomicInteger seqNumberCounter = new AtomicInteger(0);
     private int nbProcesses;
 
     private Map<Integer, Integer> highestDeliveredPerProcess = new HashMap<>();
@@ -32,9 +33,9 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
     public FIFOBroadcast(String myIP, int port) throws SocketException,
             BadIPException, UnreadableFileException {
         this.bestEffortBroadcast = new BestEffortBroadcast(port);
-        this.myID = Memberships.getProcessId(new Address(myIP, port));
+        this.myID = Memberships.getInstance().getProcessId(new Address(myIP, port));
         this.bestEffortBroadcast.registerObserver(this);
-        this.nbProcesses = Memberships.getNbProcesses();
+        this.nbProcesses = Memberships.getInstance().getNbProcesses();
     }
 
     public void registerObserver(FIFOBroadcastObserver observer) {
@@ -45,14 +46,14 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
         return this.observer != null;
     }
 
-    public void broadcast(Message message) throws BadIPException, UnreadableFileException, IOException {
-        int seqNum = ++seqNumberCounter;
+    public void broadcast(Message message) {
+        int seqNum = seqNumberCounter.incrementAndGet();
         Message mNew = new BroadcastMessage(message, seqNum, myID);
         bestEffortBroadcast.broadcast(mNew);
     }
 
-    /* only one thread can call deliverBEB, so it is sequential */
-    public void deliverBEB(Message msg, int senderID) throws BadIPException, UnreadableFileException {
+    /* only one thread can call deliverBEB, so it is sequential (== synchronized) */
+    public void deliverBEB(Message msg, int senderID) {
         if(msg == null) { //necessary?
             return;
         }
@@ -66,7 +67,6 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
         echoMessage(messageBM);
         addPending(messageBM);
         deliverPendingMessages(messageBM.getOriginalSenderID());
-
     }
 
     private void addAcknowledgement(BroadcastMessage messageBM, int senderID) {
@@ -75,7 +75,7 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
         acks.get(uniqueMessageID).add(senderID);
     }
 
-    private void echoMessage(BroadcastMessage messageBM) throws BadIPException, UnreadableFileException {
+    private void echoMessage(BroadcastMessage messageBM) {
         Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
         if(forwardedMessages.add(uniqueMessageID)) {
             bestEffortBroadcast.broadcast(messageBM);
@@ -125,14 +125,7 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
                 (message.getMessageSequenceNumber() == getHighestDelivered(message.getOriginalSenderID()) + 1);
     }
 
-    public void shutdown() {
-        bestEffortBroadcast.shutdown();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        shutdown();
-    }
+    public void shutdown() { bestEffortBroadcast.shutdown(); }
 }
 
 

@@ -32,7 +32,7 @@ public class ReliableBroadcast implements BestEffortBroadcastObserver{
 
     public ReliableBroadcast(int port) throws SocketException, BadIPException, UnreadableFileException, UnknownHostException {
        this.bestEffortBroadcast = new BestEffortBroadcast(port);
-        this.myID = Memberships.getProcessId(new Address(InetAddress.getLocalHost(), port));
+        this.myID = Memberships.getInstance().getProcessId(new Address(InetAddress.getLocalHost(), port));
         this.bestEffortBroadcast.registerObserver(this);
 
     }
@@ -45,7 +45,7 @@ public class ReliableBroadcast implements BestEffortBroadcastObserver{
         return this.observer != null;
     }
 
-    public void broadcast(Message message) throws BadIPException, UnreadableFileException, IOException {
+    public void broadcast(Message message) {
 
         int seqNum = ++seqNumberCounter;
         Message mNew = new BroadcastMessage(message, seqNum, myID);
@@ -55,7 +55,7 @@ public class ReliableBroadcast implements BestEffortBroadcastObserver{
     }
 
     @Override
-    public void deliverBEB(Message msg, int senderID) throws IOException, BadIPException, UnreadableFileException {
+    public void deliverBEB(Message msg, int senderID) {
         BroadcastMessage message = (BroadcastMessage) msg;
         int originalSenderID = message.getOriginalSenderID();
         if(!delivered.keySet().contains(originalSenderID)) {

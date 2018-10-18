@@ -1,9 +1,9 @@
 package src.links;
 
+import javafx.util.Pair;
 import src.data.ReceivedMessageHistory;
 import src.data.message.Message;
 import src.data.message.PerfectLinkMessage;
-import src.data.Packet;
 
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
@@ -15,15 +15,17 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PerfectLink implements Link, FairLossLinkObserver {
 
-    private Thread thread;
+    private Thread threadFLLrun;
 
     private Map<Integer, ReceivedMessageHistory> alreadyDeliveredPackets = new TreeMap<>();
-    private Map<Integer, Integer> sentProcessIds = new TreeMap<>();
+    private Map<Integer, AtomicInteger> sentProcessIds = new ConcurrentHashMap<>();
 
-    private Map<Integer, Thread> sentMapping = new HashMap<>();
+    private Map<Pair<Integer, Integer>, Thread> sentMapping = new ConcurrentHashMap<>();
 
     private FairLossLink fll;
 
@@ -32,31 +34,22 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     public PerfectLink(int port) throws SocketException, BadIPException, UnreadableFileException {
         this.fll = new FairLossLink(port);
         this.fll.registerObserver(this);
-        thread = new Thread(this.fll);
-        thread.start();
+        threadFLLrun = new Thread(this.fll);
+        threadFLLrun.start();
     }
 
     public void registerObserver(PerfectLinkObserver perfectLinkObserver) {
         this.perfectLinkObserver = perfectLinkObserver;
     }
 
-    public boolean hasObserver() {
+    private boolean hasObserver() {
         return this.perfectLinkObserver != null;
     }
 
     @Override
     public void send(Message message, int destID) {
-        int seqNum;
-
-        //TODO: to be discussed: does this work/ is this necessary
-        synchronized (sentProcessIds) {
-            if (!sentProcessIds.containsKey(destID)) {
-                sentProcessIds.put(destID, 0);
-            }
-            seqNum = sentProcessIds.get(destID) + 1;
-
-            sentProcessIds.replace(destID, seqNum);
-        }
+        sentProcessIds.putIfAbsent(destID, new AtomicInteger(0));
+        int seqNum = sentProcessIds.get(destID).incrementAndGet();
 
         PerfectLinkMessage mNew = new PerfectLinkMessage(message, seqNum, false);
 
@@ -67,28 +60,27 @@ public class PerfectLink implements Link, FairLossLinkObserver {
                     Thread.sleep(1000);
                 } catch (IOException e) {
                     //TODO: logger, then continue sending
-                } catch (BadIPException e) {
-                    e.printStackTrace();
-                } catch (UnreadableFileException e) {
-                    e.printStackTrace();
                 } catch (InterruptedException e) {
                     break;
                 }
             }
         });
-        sentMapping.put(seqNum, thread);
+        Pair<Integer, Integer> threadID = new Pair<>(destID, seqNum);
+        sentMapping.put(threadID, thread);
 
         thread.start();
     }
 
-
     @Override
-    public void deliverFLL(Message msg, int senderID) throws BadIPException, IOException, UnreadableFileException {
+    public void deliverFLL(Message msg, int senderID)  {
         PerfectLinkMessage messagePL = (PerfectLinkMessage) msg;
 
-        if (messagePL.isAck() && sentMapping.containsKey(messagePL.getMessageSequenceNumber())) {
-            sentMapping.get(messagePL.getMessageSequenceNumber()).interrupt();
-            sentMapping.remove(messagePL.getMessageSequenceNumber());
+        if (messagePL.isAck()) {
+            Pair<Integer, Integer> threadID = new Pair<>(senderID, messagePL.getMessageSequenceNumber());
+            Thread thread = sentMapping.remove(threadID);
+            if(thread != null) {
+                thread.interrupt();
+            }
             return;
         }
 
@@ -114,23 +106,15 @@ public class PerfectLink implements Link, FairLossLinkObserver {
             fll.send(ack, senderID);
         } catch (IOException e) {
             //TODO:logger then move on
-        } catch (BadIPException e) {
-            e.printStackTrace();
-        } catch (UnreadableFileException e) {
-            e.printStackTrace();
         }
     }
 
     public void shutdown() {
-        for (int process : sentMapping.keySet()) {
-            sentMapping.get(process).interrupt();
+        for (Thread thread : sentMapping.values()) {
+             thread.interrupt();
         }
-        thread.interrupt();
+        threadFLLrun.interrupt();
         fll.shutdown();
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        shutdown();
-    }
 }
