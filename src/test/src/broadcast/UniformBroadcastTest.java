@@ -20,9 +20,9 @@ import java.util.List;
 class UniformBroadcastTest {
 
 
-    private static final int SENDER_PORT = 11001;
-    private static final int SENDER_ID = 1;
-    private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
+    private static final int SENDER_PORT = 11010;
+    private static final int SENDER_ID = 10;
+    private static final int[] RECEIVER_PORTS = {11011, 11012, 11013, 11014};
 
     private static final String MSG_TEXT = "Hello World";
     private static final Message SIMPLE_MSG = new SimpleMessage(MSG_TEXT);
@@ -111,7 +111,7 @@ class UniformBroadcastTest {
     }
 
     private void waitForDelivery(List<TestObserver> receiverObservers) {
-        int maxTime = 10000;
+        int maxTime = 5000;
         //Wait for delivery
         boolean allReceived = false;
         int waited = 0;

@@ -17,9 +17,9 @@ import java.util.*;
 
 class BestEffortBroadcastTest {
 
-    private static final int SENDER_PORT = 11001;
-    private static final int SENDER_ID = 1;
-    private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
+    private static final int SENDER_PORT = 11005;
+    private static final int SENDER_ID = 5;
+    private static final int[] RECEIVER_PORTS = {11006, 11007, 11008, 11009};
 
     private static final String MSG_TEXT_1 = "Hello World 1";
     private static final SimpleMessage SIMPLE_MSG_1 = new SimpleMessage(MSG_TEXT_1);

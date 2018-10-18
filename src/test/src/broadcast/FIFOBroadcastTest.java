@@ -20,9 +20,9 @@ import java.util.Map;
 
 public class FIFOBroadcastTest {
 
-    private static final int SENDER_PORT = 11001;
-    private static final int SENDER_ID = 1;
-    private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
+    private static final int SENDER_PORT = 11015;
+    private static final int SENDER_ID = 15;
+    private static final int[] RECEIVER_PORTS = {11016, 11017, 11018, 11019};
 
     private static final String MSG_TEXT_1 = "Hello World 1";
     private static final String MSG_TEXT_2 = "Hello World 2";
@@ -180,15 +180,11 @@ public class FIFOBroadcastTest {
     }
 
     @Test
-    void unorderedMessagesWork() {
+    void unorderedMessagesWork() throws BadIPException {
 
-        try {
-            sender.broadcast(BROADCAST_MESSAGE_3);
-            sender.broadcast(BROADCAST_MESSAGE_2);
-            sender.broadcast(BROADCAST_MESSAGE_1);
-        } catch (BadIPException | IOException | UnreadableFileException e) {
-            Assertions.fail(e.getMessage());
-        }
+        sender.broadcast(BROADCAST_MESSAGE_3);
+        sender.broadcast(BROADCAST_MESSAGE_2);
+        sender.broadcast(BROADCAST_MESSAGE_1);
         waitForDelivery(3);
 
 

@@ -6,6 +6,8 @@ import src.exception.UnreadableFileException;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -46,7 +48,8 @@ public class Memberships {
         memberships_by_address = new HashMap<>();
 
         try {
-            List<String> allLines = Files.readAllLines(Paths.get("src/main/resources/memberships"));
+            URL fileToRead = getClass().getResource("/resources/memberships");
+            List<String> allLines = Files.readAllLines(Paths.get(fileToRead.getPath()));
 
             nbProcesses = Integer.parseInt(allLines.get(0));
 
