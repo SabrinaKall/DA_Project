@@ -9,17 +9,18 @@ import src.links.PerfectLink;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 import src.observer.link.PerfectLinkObserver;
 
-import java.io.IOException;
 import java.net.SocketException;
 
 public class BestEffortBroadcast implements PerfectLinkObserver {
 
     private PerfectLink link;
     private BestEffortBroadcastObserver observer;
+    private int nbProcesses;
 
     public BestEffortBroadcast(int port) throws SocketException, BadIPException, UnreadableFileException {
         this.link = new PerfectLink(port);
         this.link.registerObserver(this);
+        nbProcesses = Memberships.getInstance().getNbProcesses();
     }
 
     public void registerObserver(BestEffortBroadcastObserver observer) {
@@ -30,9 +31,7 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
         return this.observer != null;
     }
 
-    public void broadcast(Message message) throws BadIPException, UnreadableFileException {
-        int nbProcesses = Memberships.getNbProcesses();
-
+    public void broadcast(Message message) {
         for(int id = 1; id <= nbProcesses; ++id) {
             link.send(message, id);
         }
@@ -40,7 +39,7 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
 
 
     @Override
-    public void deliverPL(Message msg, int senderID) throws UnreadableFileException, IOException, BadIPException {
+    public void deliverPL(Message msg, int senderID) {
         if(hasObserver()) {
             observer.deliverBEB(msg, senderID);
         }
@@ -50,8 +49,4 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
         link.shutdown();
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        shutdown();
-    }
 }

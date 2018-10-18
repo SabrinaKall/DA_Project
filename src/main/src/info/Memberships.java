@@ -16,35 +16,32 @@ import java.util.Map;
 public class Memberships {
 
     private static boolean isLoaded = false;
+    private static Memberships instance;
     private static int nbProcesses;
     private static Map<Integer, Address> memberships_by_id;
     private static Map<Address, Integer> memberships_by_address;
 
-    public static int getNbProcesses() throws UnreadableFileException, BadIPException {
-        if(!isLoaded) {
-            readMemberships();
+    public static Memberships getInstance() throws UnreadableFileException, BadIPException {
+        if (!isLoaded) {
+            return new Memberships();
+        } else {
+            return instance;
         }
+    }
+
+    public int getNbProcesses() {
         return nbProcesses;
     }
 
-    public static Address getAddress(int processId) throws UnreadableFileException, BadIPException {
-        if(!isLoaded) {
-            readMemberships();
-        }
+    public Address getAddress(int processId) {
         return memberships_by_id.get(processId);
     }
 
-    public static int getProcessId(Address address) throws UnreadableFileException, BadIPException {
-        if(!isLoaded) {
-            readMemberships();
-        }
+    public int getProcessId(Address address) {
         return memberships_by_address.get(address);
     }
 
-    private Memberships() {
-    }
-
-    private static void readMemberships() throws BadIPException, UnreadableFileException {
+    private Memberships() throws BadIPException, UnreadableFileException {
         memberships_by_id = new HashMap<>();
         memberships_by_address = new HashMap<>();
 
@@ -77,6 +74,7 @@ public class Memberships {
         }
 
         isLoaded = true;
+        this.instance = this;
 
     }
 }

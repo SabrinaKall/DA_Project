@@ -12,7 +12,7 @@ class MembershipTest {
     void containsID(){
         Address address1 = null;
         try {
-            address1 = Memberships.getAddress(1);
+            address1 = Memberships.getInstance().getAddress(1);
         } catch (UnreadableFileException | BadIPException e) {
             Assertions.fail(e.getMessage());
         }
@@ -25,7 +25,7 @@ class MembershipTest {
     void containsAddress(){
         int id = -1;
         try {
-            id = Memberships.getProcessId(new Address("127.0.0.1", 11003));
+            id = Memberships.getInstance().getProcessId(new Address("127.0.0.1", 11003));
         } catch (UnreadableFileException | BadIPException e) {
             Assertions.fail(e.getMessage());
         }
@@ -35,7 +35,7 @@ class MembershipTest {
     @Test
     void nbProcesses() {
         try {
-            Assertions.assertEquals(5, Memberships.getNbProcesses());
+            Assertions.assertEquals(5, Memberships.getInstance().getNbProcesses());
         } catch (UnreadableFileException | BadIPException e) {
             Assertions.fail(e.getMessage());
         }

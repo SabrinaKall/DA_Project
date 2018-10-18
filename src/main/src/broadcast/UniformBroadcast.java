@@ -21,6 +21,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     private UniformBroadcastObserver observer;
     private int myID;
     private int seqNumberCounter = 0;
+    private int nbProcesses;
 
     private Set<Pair<Integer, Integer>> delivered = new HashSet<>();
     private Set<Pair<Integer, Integer>> forward = new HashSet<>();
@@ -28,11 +29,11 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
 
     //Note: IP has to be looked up by user, depending on what is in membership file
     public UniformBroadcast(String myIP, int port) throws SocketException,
-            BadIPException, UnreadableFileException, UnknownHostException {
+            BadIPException, UnreadableFileException {
         this.bestEffortBroadcast = new BestEffortBroadcast(port);
-        this.myID = Memberships.getProcessId(new Address(myIP, port));
+        this.myID = Memberships.getInstance().getProcessId(new Address(myIP, port));
         this.bestEffortBroadcast.registerObserver(this);
-
+        this.nbProcesses = Memberships.getInstance().getNbProcesses();
     }
 
     public void registerObserver(UniformBroadcastObserver observer) {
@@ -43,7 +44,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
         return this.observer != null;
     }
 
-    public void broadcast(Message message) throws BadIPException, UnreadableFileException, IOException {
+    public void broadcast(Message message) {
 
         int seqNum = ++seqNumberCounter;
         Message mNew = new BroadcastMessage(message, seqNum, myID);
@@ -52,7 +53,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     }
 
     @Override
-    public void deliverBEB(Message msg, int senderID) throws IOException, BadIPException, UnreadableFileException {
+    public void deliverBEB(Message msg, int senderID) {
 
         if(msg == null) { //necessary?
             return;
@@ -84,24 +85,17 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
 
     }
 
-    private boolean canDeliver(BroadcastMessage message) throws BadIPException, UnreadableFileException {
+    private boolean canDeliver(BroadcastMessage message) {
         Pair<Integer, Integer> uniqueID = message.getUniqueIdentifier();
 
         Set<Integer> deliveringProcesses = acks.get(uniqueID);
 
-        int nbProcesses = Memberships.getNbProcesses();
-
-        return (deliveringProcesses.size() > nbProcesses/2.0) && !(delivered.contains(uniqueID));
+        return (deliveringProcesses.size() > this.nbProcesses/2.0) && !(delivered.contains(uniqueID));
 
     }
 
     public void shutdown() {
         bestEffortBroadcast.shutdown();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        shutdown();
     }
 }
 
