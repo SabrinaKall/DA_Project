@@ -1,13 +1,12 @@
 package src.links;
 
-import src.data.message.BroadcastMessage;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
 import src.observer.link.PerfectLinkObserver;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.net.SocketException;
 import java.util.*;
@@ -53,8 +52,20 @@ class PerfectLinksTest {
     @Test
     void testSendAndReceive() {
         try {
-            PerfectLink sender = new PerfectLink(SENDER_PORT);
-            PerfectLink receiver = new PerfectLink(DESTINATION_PORT);
+            PerfectLink sender = null;
+            while (sender == null) {
+                try {
+                    sender = new PerfectLink(SENDER_PORT);
+                } catch (SocketException ignored) {
+                }
+            }
+            PerfectLink receiver = null;
+            while (receiver == null) {
+                try {
+                    receiver = new PerfectLink(DESTINATION_PORT);
+                } catch (SocketException ignored) {
+                }
+            }
 
             TestObserver testObserver = new TestObserver();
             receiver.registerObserver(testObserver);
@@ -83,10 +94,6 @@ class PerfectLinksTest {
             sender.shutdown();
             receiver.shutdown();
 
-
-        } catch (SocketException e) {
-            Assertions.fail("SocketException thrown: " + e.getMessage());
-            e.printStackTrace();
         } catch (InterruptedException e) {
             Assertions.fail("InterruptedException thrown: " + e.getMessage());
             e.printStackTrace();

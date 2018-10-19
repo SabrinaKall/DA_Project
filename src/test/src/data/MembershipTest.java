@@ -20,15 +20,6 @@ class MembershipTest {
         Assertions.assertEquals("/127.0.0.1", address1.getIP().toString());
         Assertions.assertEquals(11001, address1.getPort());
 
-        Address address19 = null;
-        try {
-            address19 = Memberships.getInstance().getAddress(19);
-        } catch (UnreadableFileException | BadIPException e) {
-            Assertions.fail(e.getMessage());
-        }
-        Assertions.assertNotNull(address19);
-        Assertions.assertEquals("/127.0.0.1", address19.getIP().toString());
-        Assertions.assertEquals(11019, address19.getPort());
     }
 
     @Test
@@ -41,19 +32,12 @@ class MembershipTest {
         }
         Assertions.assertEquals(3, id);
 
-        int id10 = -1;
-        try {
-            id10 = Memberships.getInstance().getProcessId(new Address("127.0.0.1", 11010));
-        } catch (UnreadableFileException | BadIPException e) {
-            Assertions.fail(e.getMessage());
-        }
-        Assertions.assertEquals(10, id10);
     }
 
     @Test
     void nbProcesses() {
         try {
-            Assertions.assertEquals(19, Memberships.getInstance().getNbProcesses());
+            Assertions.assertEquals(5, Memberships.getInstance().getNbProcesses());
         } catch (UnreadableFileException | BadIPException e) {
             Assertions.fail(e.getMessage());
         }

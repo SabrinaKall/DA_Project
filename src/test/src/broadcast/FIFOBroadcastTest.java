@@ -1,17 +1,18 @@
 package src.broadcast;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
+import src.info.Memberships;
 import src.observer.broadcast.FIFOBroadcastObserver;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,9 +21,9 @@ import java.util.Map;
 
 public class FIFOBroadcastTest {
 
-    private static final int SENDER_PORT = 11015;
-    private static final int SENDER_ID = 15;
-    private static final int[] RECEIVER_PORTS = {11016, 11017, 11018, 11019};
+    private static final int SENDER_PORT = 11001;
+    private static final int SENDER_ID = 1;
+    private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
 
     private static final String MSG_TEXT_1 = "Hello World 1";
     private static final String MSG_TEXT_2 = "Hello World 2";
@@ -82,15 +83,29 @@ public class FIFOBroadcastTest {
 
         String testIP = "127.0.0.1";
 
-        try {
-            sender = new FIFOBroadcast(testIP, SENDER_PORT);
 
-            for(int port : RECEIVER_PORTS) {
-                receivers.add(new FIFOBroadcast(testIP,port));
+        while(sender == null) {
+            try {
+                sender = new FIFOBroadcast(testIP, SENDER_PORT);
+            } catch (SocketException ignored) {
+            } catch (BadIPException | UnreadableFileException e) {
+                Assertions.fail(e.getMessage());
             }
-        } catch (SocketException | BadIPException | UnreadableFileException e) {
-            Assertions.fail("Exception thrown: " + e.getMessage());
         }
+
+        for(int port : RECEIVER_PORTS) {
+            FIFOBroadcast rec = null;
+            while (rec == null) {
+                try {
+                    rec = new FIFOBroadcast(testIP, port);
+                } catch (SocketException ignored) {
+                } catch (BadIPException | UnreadableFileException e) {
+                    Assertions.fail(e.getMessage());
+                }
+            }
+            receivers.add(rec);
+        }
+
 
         receiverObservers = new ArrayList<>();
 
@@ -219,8 +234,9 @@ public class FIFOBroadcastTest {
 
     }
 
+
     private void waitForDelivery(int nbMessagesAwaited) {
-        int maxTime = 10000;
+        int maxTime = 3000;
         //Wait for delivery
         boolean allReceived = false;
         int min = nbMessagesAwaited;

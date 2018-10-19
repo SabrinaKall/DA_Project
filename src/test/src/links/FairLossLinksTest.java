@@ -28,17 +28,39 @@ class FairLossLinksTest {
     @Test
     void creationAndShutdownTest() {
         try {
-            FairLossLink sender = new FairLossLink(SENDER_PORT);
-            FairLossLink receiver = new FairLossLink(DESTINATION_PORT);
+            FairLossLink sender = null;
+            while (sender == null) {
+                try {
+                    sender = new FairLossLink(SENDER_PORT);
+                } catch (SocketException ignored) {
+                }
+            }
+            FairLossLink receiver = null;
+            while (receiver == null) {
+                try {
+                    receiver = new FairLossLink(DESTINATION_PORT);
+                } catch (SocketException ignored) {
+                }
+            }
             sender.shutdown();
             receiver.shutdown();
-            sender = new FairLossLink(SENDER_PORT);
-            receiver = new FairLossLink(DESTINATION_PORT);
+
+            sender = null;
+            while (sender == null) {
+                try {
+                    sender = new FairLossLink(SENDER_PORT);
+                } catch (SocketException ignored) {
+                }
+            }
+            receiver = null;
+            while (receiver == null) {
+                try {
+                    receiver = new FairLossLink(DESTINATION_PORT);
+                } catch (SocketException ignored) {
+                }
+            }
             sender.shutdown();
             receiver.shutdown();
-        } catch (SocketException e) {
-            Assertions.fail("SocketException thrown");
-            e.printStackTrace();
         } catch (UnreadableFileException e) {
             Assertions.fail("UnreadableFileException thrown");
             e.printStackTrace();
@@ -51,8 +73,20 @@ class FairLossLinksTest {
     @Test
     void sendAndReceiveWork() {
         try {
-            FairLossLink sender = new FairLossLink(SENDER_PORT);
-            FairLossLink receiver = new FairLossLink(DESTINATION_PORT);
+            FairLossLink sender = null;
+            while (sender == null) {
+                try {
+                    sender = new FairLossLink(SENDER_PORT);
+                } catch (SocketException ignored) {
+                }
+            }
+            FairLossLink receiver = null;
+            while (receiver == null) {
+                try {
+                    receiver = new FairLossLink(DESTINATION_PORT);
+                } catch (SocketException ignored) {
+                }
+            }
 
             sender.send(SIMPLE_MSG_1, DESTINATION_ID);
             sender.send(SIMPLE_MSG_2, DESTINATION_ID);
@@ -73,9 +107,6 @@ class FairLossLinksTest {
             sender.shutdown();
             receiver.shutdown();
 
-        } catch (SocketException e) {
-            Assertions.fail("SocketException thrown");
-            e.printStackTrace();
         } catch (IOException e) {
             Assertions.fail("IOException thrown");
             e.printStackTrace();
