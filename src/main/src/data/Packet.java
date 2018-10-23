@@ -4,16 +4,10 @@ import src.data.message.Message;
 
 public class Packet {
 
-    private boolean empty;
     private Message message;
     private int processId;
 
-    public Packet() {
-        this.empty = true;
-    }
-
     public Packet(Message message, int processId) {
-        this.empty = false;
         this.message = message;
         this.processId = processId;
     }
@@ -28,9 +22,5 @@ public class Packet {
 
     public int getProcessId() {
         return processId;
-    }
-
-    public boolean isEmpty() {
-        return empty;
     }
 }

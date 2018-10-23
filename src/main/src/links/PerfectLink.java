@@ -7,6 +7,7 @@ import src.data.message.PerfectLinkMessage;
 
 import src.exception.BadIPException;
 import src.exception.UnreadableFileException;
+import src.info.Memberships;
 import src.observer.link.FairLossLinkObserver;
 import src.observer.link.PerfectLinkObserver;
 
@@ -14,7 +15,6 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -22,20 +22,25 @@ public class PerfectLink implements Link, FairLossLinkObserver {
 
     private Thread threadFLLrun;
 
-    private Map<Integer, ReceivedMessageHistory> alreadyDeliveredPackets = new TreeMap<>();
+    private Map<Integer, ReceivedMessageHistory> alreadyDeliveredPackets = new HashMap<>();
     private Map<Integer, AtomicInteger> sentProcessIds = new ConcurrentHashMap<>();
-
     private Map<Pair<Integer, Integer>, Thread> sentMapping = new ConcurrentHashMap<>();
 
     private FairLossLink fll;
 
     private PerfectLinkObserver perfectLinkObserver = null;
+    private int nbProcesses;
 
     public PerfectLink(int port) throws SocketException, BadIPException, UnreadableFileException {
         this.fll = new FairLossLink(port);
         this.fll.registerObserver(this);
         threadFLLrun = new Thread(this.fll);
         threadFLLrun.start();
+        this.nbProcesses = Memberships.getInstance().getNbProcesses();
+
+        for (int num=1; num<=this.nbProcesses; num++) {
+            alreadyDeliveredPackets.put(num, new ReceivedMessageHistory());
+        }
     }
 
     public void registerObserver(PerfectLinkObserver perfectLinkObserver) {
@@ -59,7 +64,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
                     fll.send(mNew, destID);
                     Thread.sleep(1000);
                 } catch (IOException e) {
-                    //TODO: logger, then continue sending
+                    //TODO: error logger, then continue sending
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -85,16 +90,9 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         }
 
         acknowledge(messagePL, senderID);
-        //if process never messaged us before, init in map
-        if (!alreadyDeliveredPackets.keySet().contains(senderID)) {
-            alreadyDeliveredPackets.put(senderID, new ReceivedMessageHistory());
-        }
-        if (!alreadyDeliveredPackets.get(senderID).contains(messagePL.getMessageSequenceNumber())) {
-            alreadyDeliveredPackets.get(senderID).add(messagePL.getMessageSequenceNumber());
-            if (hasObserver()) {
-                Message unwrapped = messagePL.getMessage();
-                perfectLinkObserver.deliverPL(unwrapped, senderID);
-            }
+
+        if (hasObserver() && alreadyDeliveredPackets.get(senderID).add(messagePL.getMessageSequenceNumber())) {
+            perfectLinkObserver.deliverPL(messagePL.getMessage(), senderID);
         }
 
     }
