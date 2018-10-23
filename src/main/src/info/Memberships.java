@@ -22,10 +22,15 @@ public class Memberships {
     private static int nbProcesses;
     private static Map<Integer, Address> memberships_by_id;
     private static Map<Address, Integer> memberships_by_address;
+    private String filename;
 
-    public static Memberships getInstance() throws UnreadableFileException, BadIPException {
+    public static Memberships getInstance() throws BadIPException, UnreadableFileException {
+        return getInstance("membership");
+    }
+
+    public static Memberships getInstance(String filename) throws BadIPException, UnreadableFileException {
         if (!isLoaded) {
-            return new Memberships();
+            return new Memberships(filename);
         } else {
             return instance;
         }
@@ -43,12 +48,13 @@ public class Memberships {
         return memberships_by_address.get(address);
     }
 
-    private Memberships() throws BadIPException, UnreadableFileException {
+    private Memberships(String filename) throws BadIPException, UnreadableFileException {
+        this.filename = filename;
         memberships_by_id = new HashMap<>();
         memberships_by_address = new HashMap<>();
 
         try {
-            URL fileToRead = getClass().getResource("/resources/memberships");
+            URL fileToRead = getClass().getResource("membership");
             List<String> allLines = Files.readAllLines(Paths.get(fileToRead.getPath()));
 
             nbProcesses = Integer.parseInt(allLines.get(0));

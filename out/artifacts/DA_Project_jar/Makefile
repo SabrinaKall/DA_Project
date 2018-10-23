@@ -1,7 +1,7 @@
-all: DA_Project	
+all: da_proc
 	
-DA_Project: DA_Project.jar
-	cat stub.sh DA_Project.jar > DA_Project && chmod +x DA_Project
+da_proc: DA_Project.jar
+	cat stub.sh DA_Project.jar > da_proc && chmod +x da_proc
 
 clean:
-	rm DA_Project
+	rm da_proc

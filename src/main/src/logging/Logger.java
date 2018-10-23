@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Logger {
 
-    private static final String PARENT_DIRECTORY = "resources/";
+    private static final String PARENT_DIRECTORY = "/home/sabrina/Etudes/Master/Semestre_1/Distributed_Algorithms/Project/DA_Project/src/main/resources/";
 
     private int processID;
     private String filepath;
@@ -25,7 +25,9 @@ public class Logger {
             logFile.delete();
         }
         try {
-            logFile.createNewFile();
+            if(!logFile.exists()) {
+                logFile.createNewFile();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
