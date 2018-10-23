@@ -83,7 +83,6 @@ public class Memberships {
         }
 
         isLoaded = true;
-        this.instance = this;
 
     }
 }

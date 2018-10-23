@@ -1,6 +1,7 @@
 package src.links;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import src.data.message.Message;
@@ -9,6 +10,7 @@ import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
+import src.info.Memberships;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -25,6 +27,11 @@ class FairLossLinksTest {
 
     private static final String MSG_TEXT_2 = "Hello World 2";
     private static final Message SIMPLE_MSG_2 = new SimpleMessage(MSG_TEXT_2);
+
+    @BeforeAll
+    static void init() throws BadIPException, UnreadableFileException {
+        Memberships.init("src/test/resources/membership");
+    }
 
     @Test
     void creationAndShutdownTest() {

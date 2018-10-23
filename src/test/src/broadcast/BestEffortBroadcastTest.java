@@ -1,6 +1,7 @@
 package src.broadcast;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import src.data.message.Message;
@@ -56,11 +57,14 @@ class BestEffortBroadcastTest {
         }
     }
 
+    @BeforeAll
+    static void init() throws BadIPException, UnreadableFileException {
+        Memberships.init("src/test/resources/membership");
+    }
+
 
     @Test
     void testBroadcastAndReceive() throws BadIPException, UnreadableFileException {
-
-        Memberships.init("src/test/resources/membership");
 
         BestEffortBroadcast sender = null;
 

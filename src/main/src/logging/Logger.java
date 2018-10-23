@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Logger {
 
-    private static final String PARENT_DIRECTORY = "/home/sabrina/Etudes/Master/Semestre_1/Distributed_Algorithms/Project/DA_Project/src/main/resources/";
+    private static final String PARENT_DIRECTORY = "./output/";
 
     private int processID;
     private String filepath;
@@ -19,8 +19,15 @@ public class Logger {
 
     public Logger(int processID) {
         this.processID = processID;
+
+        File parentDir = new File(PARENT_DIRECTORY);
+        if(!parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
         this.filepath = PARENT_DIRECTORY + "da_proc_" + processID + ".out";
         File logFile = new File(filepath);
+
         if(logFile.exists()) {
             logFile.delete();
         }
@@ -37,6 +44,7 @@ public class Logger {
 
     private void log(String message) {
         tempLogs.add(message);
+        //System.out.print(message);
     }
 
     private String messageWithEndline(String message) {
