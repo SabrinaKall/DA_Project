@@ -27,3 +27,6 @@ hs_err_pid*
 .idea/workspace.xml
 DA_Project.iml
 .idea/modules.xml
+.Rhistory
+src/main/resources
+src/test/resources
