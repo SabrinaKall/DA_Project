@@ -106,12 +106,10 @@ class FairLossLinksTest {
 
 
             Packet received1 = receiver.receive();
-            Assertions.assertFalse(received1.isEmpty());
             Assertions.assertEquals(SENDER_ID, received1.getProcessId());
             Assertions.assertEquals(SIMPLE_MSG_1, received1.getMessage());
 
             Packet received2 = receiver.receive();
-            Assertions.assertFalse(received2.isEmpty());
             Assertions.assertEquals(SENDER_ID, received2.getProcessId());
             Assertions.assertEquals(SIMPLE_MSG_2, received2.getMessage());
 

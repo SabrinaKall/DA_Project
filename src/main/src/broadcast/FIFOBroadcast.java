@@ -13,7 +13,6 @@ import src.logging.Logger;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 import src.observer.broadcast.FIFOBroadcastObserver;
 
-import java.io.IOException;
 import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,8 +21,8 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
 
     private BestEffortBroadcast bestEffortBroadcast;
     private FIFOBroadcastObserver observer;
-    private int myID;
     private AtomicInteger seqNumberCounter = new AtomicInteger(0);
+    private int myID;
     private int nbProcesses;
     private Logger logger;
 
@@ -40,6 +39,10 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
         this.bestEffortBroadcast.registerObserver(this);
         this.nbProcesses = Memberships.getInstance().getNbProcesses();
         this.logger = new Logger(myID);
+
+        for (int num=1; num<=this.nbProcesses; num++) {
+            receivedMessagesPerProcess.put(num, new ReceivedMessageHistory());
+        }
     }
 
 
@@ -50,6 +53,10 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
         this.bestEffortBroadcast.registerObserver(this);
         this.nbProcesses = Memberships.getInstance().getNbProcesses();
         this.logger = new Logger(myID);
+
+        for (int num=1; num<=this.nbProcesses; num++) {
+            receivedMessagesPerProcess.put(num, new ReceivedMessageHistory());
+        }
     }
 
     public void registerObserver(FIFOBroadcastObserver observer) {
@@ -67,12 +74,8 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
         logger.logBroadcast(seqNum);
     }
 
-    /* only one thread can call deliverBEB, so it is sequential (== synchronized) */
-    public void deliverBEB(Message msg, int senderID) {
-        if(msg == null) { //necessary?
-            return;
-        }
-
+    @Override
+    public synchronized void deliverBEB(Message msg, int senderID) {
         BroadcastMessage messageBM = (BroadcastMessage) msg;
         if (messageBM.getMessageSequenceNumber() <= getHighestDelivered(senderID)) {
             return;
@@ -98,7 +101,6 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
     }
 
     private void addPending(BroadcastMessage messageBM) {
-        receivedMessagesPerProcess.putIfAbsent(messageBM.getOriginalSenderID(), new ReceivedMessageHistory());
         receivedMessagesPerProcess.get(messageBM.getOriginalSenderID()).add(messageBM.getMessageSequenceNumber());
         pendingMessages.put(messageBM.getUniqueIdentifier(), messageBM);
     }
@@ -127,9 +129,8 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
             acks.remove(messageBM.getUniqueIdentifier());
             forwardedMessages.remove(messageBM.getUniqueIdentifier());
             pendingMessages.remove(messageBM.getUniqueIdentifier());
-            int originalSender = messageBM.getOriginalSenderID();
-            observer.deliverFIFOB(messageBM.getMessage(), originalSender);
-            logger.logDelivery(originalSender, messageSeqNumber);
+            observer.deliverFIFOB(messageBM.getMessage(), messageBM.getOriginalSenderID());
+            logger.logDelivery(messageBM.getOriginalSenderID(), messageSeqNumber);
         }
     }
 

@@ -16,17 +16,17 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class UniformBroadcast implements BestEffortBroadcastObserver {
 
     private BestEffortBroadcast bestEffortBroadcast;
     private UniformBroadcastObserver observer;
+    private AtomicInteger seqNumberCounter = new AtomicInteger(0);
     private int myID;
-    private int seqNumberCounter = 0;
     private int nbProcesses;
 
     private Map<Integer, ReceivedMessageHistory> deliveredMessagesPerProcess = new HashMap<>();
-    private Set<Pair<Integer, Integer>> delivered = new HashSet<>();
     private Set<Pair<Integer, Integer>> forwardedMessages = new HashSet<>();
     private Map<Pair<Integer, Integer>, Set<Integer>> acks = new HashMap<>();
 
@@ -37,6 +37,10 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
         this.myID = Memberships.getInstance().getProcessId(new Address(myIP, port));
         this.bestEffortBroadcast.registerObserver(this);
         this.nbProcesses = Memberships.getInstance().getNbProcesses();
+
+        for (int num=1; num<=this.nbProcesses; num++) {
+            deliveredMessagesPerProcess.put(num, new ReceivedMessageHistory());
+        }
     }
 
     public void registerObserver(UniformBroadcastObserver observer) {
@@ -48,62 +52,61 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     }
 
     public void broadcast(Message message) {
-
-        int seqNum = ++seqNumberCounter;
+        int seqNum = seqNumberCounter.incrementAndGet();
         Message mNew = new BroadcastMessage(message, seqNum, myID);
         bestEffortBroadcast.broadcast(mNew);
-
     }
 
     @Override
-    public void deliverBEB(Message msg, int senderID) {
+    public synchronized void deliverBEB(Message msg, int senderID) {
+        BroadcastMessage bm = (BroadcastMessage) msg;
 
-        if(msg == null) { //necessary?
+        if (hasDelivered(bm)) {  //protects 'acks' and 'forwardedMessages' garbage collection
             return;
         }
 
-        BroadcastMessage messageBM = (BroadcastMessage) msg;
-        if (/*getHighestDelivered ||*/ delivered.contains(messageBM.getUniqueIdentifier())) {
-            return;
-        }
+        addAcknowledgement(bm, senderID);
 
-        addAcknowledgement(messageBM, senderID);
+        echoMessage(bm);
 
-        echoMessage(messageBM);
-
-        if (canDeliver(messageBM)) {
-            deliver(messageBM);
+        if (canDeliver(bm)) {
+            deliver(bm);
         }
     }
 
-    private void deliver(BroadcastMessage messageBM) {
+    private boolean hasDelivered(BroadcastMessage bm) {
+        return deliveredMessagesPerProcess.get(bm.getOriginalSenderID()).contains(bm.getMessageSequenceNumber());
+    }
+
+    private void addDelivered(BroadcastMessage bm) {
+        deliveredMessagesPerProcess.get(bm.getOriginalSenderID()).add(bm.getMessageSequenceNumber());
+    }
+
+    private void deliver(BroadcastMessage bm) {
         if(hasObserver()) {
-            observer.deliverURB(messageBM.getMessage(), messageBM.getOriginalSenderID());
+            observer.deliverURB(bm.getMessage(), bm.getOriginalSenderID());
         }
-        delivered.add(messageBM.getUniqueIdentifier());
-        deliveredMessagesPerProcess.putIfAbsent(messageBM.getOriginalSenderID(), new ReceivedMessageHistory());
-        deliveredMessagesPerProcess.get(messageBM.getOriginalSenderID()).add(messageBM.getMessageSequenceNumber());
+        addDelivered(bm);
+        forwardedMessages.remove(bm.getUniqueIdentifier());
+        acks.remove(bm.getUniqueIdentifier());
     }
 
-    private void addAcknowledgement(BroadcastMessage messageBM, int senderID) {
-        Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
+    private void addAcknowledgement(BroadcastMessage bm, int senderID) {
+        Pair<Integer, Integer> uniqueMessageID = bm.getUniqueIdentifier();
         acks.putIfAbsent(uniqueMessageID, new HashSet<>());
         acks.get(uniqueMessageID).add(senderID);
     }
 
-    private void echoMessage(BroadcastMessage messageBM) {
-        Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
+    private void echoMessage(BroadcastMessage bm) {
+        Pair<Integer, Integer> uniqueMessageID = bm.getUniqueIdentifier();
         if(forwardedMessages.add(uniqueMessageID)) {
-            bestEffortBroadcast.broadcast(messageBM);
+            bestEffortBroadcast.broadcast(bm);
         }
     }
 
-    private boolean canDeliver(BroadcastMessage message) {
-        Pair<Integer, Integer> uniqueID = message.getUniqueIdentifier();
-
-        Set<Integer> deliveringProcesses = acks.get(uniqueID);
-
-        return (deliveringProcesses.size() > this.nbProcesses/2.0) && !(delivered.contains(uniqueID));
+    private boolean canDeliver(BroadcastMessage bm) {
+        Set<Integer> deliveringProcesses = acks.get(bm.getUniqueIdentifier());
+        return (deliveringProcesses.size() > this.nbProcesses/2.0); //at this point we know that !hasDelivered(message)
     }
 
     public void shutdown() {
