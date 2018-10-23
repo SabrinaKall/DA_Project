@@ -6,6 +6,7 @@ import src.data.message.Message;
 import src.data.message.PerfectLinkMessage;
 
 import src.exception.BadIPException;
+import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.observer.link.FairLossLinkObserver;
 import src.observer.link.PerfectLinkObserver;
@@ -31,7 +32,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
 
     private PerfectLinkObserver perfectLinkObserver = null;
 
-    public PerfectLink(int port) throws SocketException, BadIPException, UnreadableFileException {
+    public PerfectLink(int port) throws SocketException, BadIPException, UnreadableFileException, UninitialisedMembershipsException {
         this.fll = new FairLossLink(port);
         this.fll.registerObserver(this);
         threadFLLrun = new Thread(this.fll);

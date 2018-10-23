@@ -6,6 +6,7 @@ import src.data.ReceivedMessageHistory;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
 import src.exception.BadIPException;
+import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.info.Memberships;
 import src.observer.broadcast.BestEffortBroadcastObserver;
@@ -29,9 +30,9 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     private Set<Pair<Integer, Integer>> forwardedMessages = new HashSet<>();
     private Map<Pair<Integer, Integer>, Set<Integer>> acks = new HashMap<>();
 
-    //Note: IP has to be looked up by user, depending on what is in membership file
+    //Note: IP has to be looked up by user, depending on what is in memberships file
     public UniformBroadcast(String myIP, int port) throws SocketException,
-            BadIPException, UnreadableFileException {
+            BadIPException, UnreadableFileException, UninitialisedMembershipsException {
         this.bestEffortBroadcast = new BestEffortBroadcast(port);
         this.myID = Memberships.getInstance().getProcessId(new Address(myIP, port));
         this.bestEffortBroadcast.registerObserver(this);

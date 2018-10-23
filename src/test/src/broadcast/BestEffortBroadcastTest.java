@@ -7,10 +7,13 @@ import src.data.message.Message;
 import src.data.message.SequenceMessage;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
+import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 
 import java.net.InetAddress;
 import java.net.SocketException;
+
+import src.info.Memberships;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 
 import java.util.*;
@@ -55,7 +58,9 @@ class BestEffortBroadcastTest {
 
 
     @Test
-    void testBroadcastAndReceive() {
+    void testBroadcastAndReceive() throws BadIPException, UnreadableFileException {
+
+        Memberships.init("src/test/resources/membership");
 
         BestEffortBroadcast sender = null;
 
@@ -68,6 +73,8 @@ class BestEffortBroadcastTest {
             } catch (BadIPException | UnreadableFileException e) {
                 Assertions.fail(e.getMessage());
             } catch (SocketException ignored) {
+            } catch (UninitialisedMembershipsException e) {
+                e.printStackTrace();
             }
         }
 
@@ -79,6 +86,8 @@ class BestEffortBroadcastTest {
                 } catch (SocketException ignored) {
                 } catch (BadIPException | UnreadableFileException e) {
                     Assertions.fail(e.getMessage());
+                } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
                 }
             }
             receivers.add(rec);

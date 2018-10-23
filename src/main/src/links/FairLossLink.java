@@ -3,6 +3,7 @@ package src.links;
 import src.data.Address;
 import src.data.message.Message;
 import src.data.Packet;
+import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.exception.BadIPException;
 import src.info.Memberships;
@@ -20,7 +21,7 @@ public class FairLossLink implements Link, Runnable {
     private DatagramSocket socket;
     private FairLossLinkObserver obsFLL = null;
 
-    public FairLossLink(int port) throws SocketException, UnreadableFileException, BadIPException {
+    public FairLossLink(int port) throws SocketException, UnreadableFileException, BadIPException, UninitialisedMembershipsException {
         this.socket = new DatagramSocket(port);
         this.memberInfo = Memberships.getInstance();
     }

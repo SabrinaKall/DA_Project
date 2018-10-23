@@ -2,6 +2,7 @@ package src.info;
 
 import src.data.Address;
 import src.exception.BadIPException;
+import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +25,16 @@ public class Memberships {
     private static Map<Integer, Address> memberships_by_id;
     private static Map<Address, Integer> memberships_by_address;
 
-    public static Memberships getInstance() throws UnreadableFileException, BadIPException {
+    public static Memberships getInstance() throws UninitialisedMembershipsException {
         if (!isLoaded) {
-            return new Memberships();
+            throw new UninitialisedMembershipsException();
         } else {
             return instance;
         }
+    }
+
+    public static void init(String filename) throws UnreadableFileException, BadIPException {
+        instance = new Memberships(filename);
     }
 
     public int getNbProcesses() {
@@ -43,13 +49,13 @@ public class Memberships {
         return memberships_by_address.get(address);
     }
 
-    private Memberships() throws BadIPException, UnreadableFileException {
+    private Memberships(String filename) throws BadIPException, UnreadableFileException {
         memberships_by_id = new HashMap<>();
         memberships_by_address = new HashMap<>();
 
         try {
-            URL fileToRead = getClass().getResource("/resources/membership");
-            List<String> allLines = Files.readAllLines(Paths.get(fileToRead.getPath()));
+            Path fileToRead = Paths.get(filename);
+            List<String> allLines = Files.readAllLines(fileToRead);
 
             nbProcesses = Integer.parseInt(allLines.get(0));
 

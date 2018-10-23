@@ -6,8 +6,10 @@ import src.data.ReceivedMessageHistory;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
 import src.exception.BadIPException;
+import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.info.Memberships;
+import src.logging.Logger;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 import src.observer.broadcast.FIFOBroadcastObserver;
 
@@ -17,11 +19,13 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FIFOBroadcast implements BestEffortBroadcastObserver {
+
     private BestEffortBroadcast bestEffortBroadcast;
     private FIFOBroadcastObserver observer;
     private int myID;
     private AtomicInteger seqNumberCounter = new AtomicInteger(0);
     private int nbProcesses;
+    private Logger logger;
 
     private Map<Integer, Integer> highestDeliveredPerProcess = new HashMap<>();
     private Map<Integer, ReceivedMessageHistory> receivedMessagesPerProcess = new HashMap<>();
@@ -29,13 +33,23 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
     private Map<Pair<Integer, Integer>, BroadcastMessage> pendingMessages = new HashMap<>();
     private Set<Pair<Integer, Integer>> forwardedMessages = new HashSet<>();
 
+    public FIFOBroadcast(int myID) throws SocketException, UninitialisedMembershipsException, UnreadableFileException, BadIPException {
+        this.myID = myID;
+        Address myAddress = Memberships.getInstance().getAddress(myID);
+        this.bestEffortBroadcast = new BestEffortBroadcast(myAddress.getPort());
+        this.bestEffortBroadcast.registerObserver(this);
+        this.nbProcesses = Memberships.getInstance().getNbProcesses();
+        this.logger = new Logger(myID);
+    }
+
 
     public FIFOBroadcast(String myIP, int port) throws SocketException,
-            BadIPException, UnreadableFileException {
+            BadIPException, UnreadableFileException, UninitialisedMembershipsException {
         this.bestEffortBroadcast = new BestEffortBroadcast(port);
         this.myID = Memberships.getInstance().getProcessId(new Address(myIP, port));
         this.bestEffortBroadcast.registerObserver(this);
         this.nbProcesses = Memberships.getInstance().getNbProcesses();
+        this.logger = new Logger(myID);
     }
 
     public void registerObserver(FIFOBroadcastObserver observer) {
@@ -50,6 +64,7 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
         int seqNum = seqNumberCounter.incrementAndGet();
         Message mNew = new BroadcastMessage(message, seqNum, myID);
         bestEffortBroadcast.broadcast(mNew);
+        logger.logBroadcast(seqNum);
     }
 
     /* only one thread can call deliverBEB, so it is sequential (== synchronized) */
@@ -106,12 +121,15 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
     }
 
     private void deliver(BroadcastMessage messageBM) {
-        highestDeliveredPerProcess.put(messageBM.getOriginalSenderID(), messageBM.getMessageSequenceNumber());
+        int messageSeqNumber = messageBM.getMessageSequenceNumber();
+        highestDeliveredPerProcess.put(messageBM.getOriginalSenderID(), messageSeqNumber);
         if(hasObserver()) {
             acks.remove(messageBM.getUniqueIdentifier());
             forwardedMessages.remove(messageBM.getUniqueIdentifier());
             pendingMessages.remove(messageBM.getUniqueIdentifier());
-            observer.deliverFIFOB(messageBM.getMessage(), messageBM.getOriginalSenderID());
+            int originalSender = messageBM.getOriginalSenderID();
+            observer.deliverFIFOB(messageBM.getMessage(), originalSender);
+            logger.logDelivery(originalSender, messageSeqNumber);
         }
     }
 

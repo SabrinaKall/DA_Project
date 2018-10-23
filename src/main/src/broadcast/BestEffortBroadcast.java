@@ -3,6 +3,7 @@ package src.broadcast;
 
 import src.data.message.Message;
 import src.exception.BadIPException;
+import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.info.Memberships;
 import src.links.PerfectLink;
@@ -17,7 +18,7 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
     private BestEffortBroadcastObserver observer;
     private int nbProcesses;
 
-    public BestEffortBroadcast(int port) throws SocketException, BadIPException, UnreadableFileException {
+    public BestEffortBroadcast(int port) throws SocketException, BadIPException, UnreadableFileException, UninitialisedMembershipsException {
         this.link = new PerfectLink(port);
         this.link.registerObserver(this);
         nbProcesses = Memberships.getInstance().getNbProcesses();

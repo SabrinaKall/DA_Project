@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
+import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.observer.link.PerfectLinkObserver;
 
@@ -57,6 +58,8 @@ class PerfectLinksTest {
                 try {
                     sender = new PerfectLink(SENDER_PORT);
                 } catch (SocketException ignored) {
+                } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
                 }
             }
             PerfectLink receiver = null;
@@ -64,6 +67,8 @@ class PerfectLinksTest {
                 try {
                     receiver = new PerfectLink(DESTINATION_PORT);
                 } catch (SocketException ignored) {
+                } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
                 }
             }
 

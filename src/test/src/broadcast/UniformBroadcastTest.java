@@ -7,10 +7,12 @@ import src.data.message.BroadcastMessage;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
+import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import java.io.IOException;
 import java.net.SocketException;
 
+import src.info.Memberships;
 import src.observer.broadcast.UniformBroadcastObserver;
 
 import java.net.UnknownHostException;
@@ -53,7 +55,9 @@ class UniformBroadcastTest {
 
 
     @Test
-    void testBroadcastAndReceive() {
+    void testBroadcastAndReceive() throws BadIPException, UnreadableFileException {
+
+        Memberships.init("src/test/resources/membership");
 
         UniformBroadcast sender = null;
 
@@ -68,6 +72,8 @@ class UniformBroadcastTest {
             } catch (SocketException ignored) {
             } catch (BadIPException | UnreadableFileException e) {
                 Assertions.fail(e.getMessage());
+            } catch (UninitialisedMembershipsException e) {
+                e.printStackTrace();
             }
         }
 
@@ -79,6 +85,8 @@ class UniformBroadcastTest {
                 } catch (SocketException ignored) {
                 } catch (BadIPException | UnreadableFileException e) {
                     Assertions.fail(e.getMessage());
+                } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
                 }
 
             }

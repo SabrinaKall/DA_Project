@@ -7,6 +7,7 @@ import src.data.message.Message;
 import src.data.Packet;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
+import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 
 import java.io.IOException;
@@ -33,6 +34,8 @@ class FairLossLinksTest {
                 try {
                     sender = new FairLossLink(SENDER_PORT);
                 } catch (SocketException ignored) {
+                } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
                 }
             }
             FairLossLink receiver = null;
@@ -40,6 +43,8 @@ class FairLossLinksTest {
                 try {
                     receiver = new FairLossLink(DESTINATION_PORT);
                 } catch (SocketException ignored) {
+                } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
                 }
             }
             sender.shutdown();
@@ -50,6 +55,8 @@ class FairLossLinksTest {
                 try {
                     sender = new FairLossLink(SENDER_PORT);
                 } catch (SocketException ignored) {
+                } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
                 }
             }
             receiver = null;
@@ -57,6 +64,8 @@ class FairLossLinksTest {
                 try {
                     receiver = new FairLossLink(DESTINATION_PORT);
                 } catch (SocketException ignored) {
+                } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
                 }
             }
             sender.shutdown();
@@ -78,6 +87,8 @@ class FairLossLinksTest {
                 try {
                     sender = new FairLossLink(SENDER_PORT);
                 } catch (SocketException ignored) {
+                } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
                 }
             }
             FairLossLink receiver = null;
@@ -85,6 +96,8 @@ class FairLossLinksTest {
                 try {
                     receiver = new FairLossLink(DESTINATION_PORT);
                 } catch (SocketException ignored) {
+                } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
                 }
             }
 
