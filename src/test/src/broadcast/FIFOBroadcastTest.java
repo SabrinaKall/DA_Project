@@ -85,7 +85,6 @@ public class FIFOBroadcastTest {
 
         String testIP = "127.0.0.1";
 
-
         while(sender == null) {
             try {
                 sender = new FIFOBroadcast(testIP, SENDER_PORT);

@@ -35,55 +35,47 @@ class FairLossLinksTest {
 
     @Test
     void creationAndShutdownTest() {
-        try {
-            FairLossLink sender = null;
-            while (sender == null) {
-                try {
-                    sender = new FairLossLink(SENDER_PORT);
-                } catch (SocketException ignored) {
-                } catch (UninitialisedMembershipsException e) {
-                    e.printStackTrace();
-                }
+        FairLossLink sender = null;
+        while (sender == null) {
+            try {
+                sender = new FairLossLink(SENDER_PORT);
+            } catch (SocketException ignored) {
+            } catch (UninitialisedMembershipsException e) {
+                e.printStackTrace();
             }
-            FairLossLink receiver = null;
-            while (receiver == null) {
-                try {
-                    receiver = new FairLossLink(DESTINATION_PORT);
-                } catch (SocketException ignored) {
-                } catch (UninitialisedMembershipsException e) {
-                    e.printStackTrace();
-                }
-            }
-            sender.shutdown();
-            receiver.shutdown();
-
-            sender = null;
-            while (sender == null) {
-                try {
-                    sender = new FairLossLink(SENDER_PORT);
-                } catch (SocketException ignored) {
-                } catch (UninitialisedMembershipsException e) {
-                    e.printStackTrace();
-                }
-            }
-            receiver = null;
-            while (receiver == null) {
-                try {
-                    receiver = new FairLossLink(DESTINATION_PORT);
-                } catch (SocketException ignored) {
-                } catch (UninitialisedMembershipsException e) {
-                    e.printStackTrace();
-                }
-            }
-            sender.shutdown();
-            receiver.shutdown();
-        } catch (UnreadableFileException e) {
-            Assertions.fail("UnreadableFileException thrown");
-            e.printStackTrace();
-        } catch (BadIPException e) {
-            Assertions.fail("BadIpException thrown");
-            e.printStackTrace();
         }
+        FairLossLink receiver = null;
+        while (receiver == null) {
+            try {
+                receiver = new FairLossLink(DESTINATION_PORT);
+            } catch (SocketException ignored) {
+            } catch (UninitialisedMembershipsException e) {
+                e.printStackTrace();
+            }
+        }
+        sender.shutdown();
+        receiver.shutdown();
+
+        sender = null;
+        while (sender == null) {
+            try {
+                sender = new FairLossLink(SENDER_PORT);
+            } catch (SocketException ignored) {
+            } catch (UninitialisedMembershipsException e) {
+                e.printStackTrace();
+            }
+        }
+        receiver = null;
+        while (receiver == null) {
+            try {
+                receiver = new FairLossLink(DESTINATION_PORT);
+            } catch (SocketException ignored) {
+            } catch (UninitialisedMembershipsException e) {
+                e.printStackTrace();
+            }
+        }
+        sender.shutdown();
+        receiver.shutdown();
     }
 
     @Test
@@ -127,12 +119,6 @@ class FairLossLinksTest {
 
         } catch (IOException e) {
             Assertions.fail("IOException thrown");
-            e.printStackTrace();
-        } catch (BadIPException e) {
-            Assertions.fail("BadIPException thrown");
-            e.printStackTrace();
-        } catch (UnreadableFileException e) {
-            Assertions.fail("UnreadableFileException thrown");
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             Assertions.fail("ClassNotFoundException thrown");

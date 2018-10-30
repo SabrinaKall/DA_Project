@@ -31,6 +31,19 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     private Set<Pair> forwardedMessages = new HashSet<>();
     private Map<Pair, Set<Integer>> acks = new HashMap<>();
 
+    public UniformBroadcast(int myID) throws SocketException,
+            BadIPException, UnreadableFileException, UninitialisedMembershipsException {
+        Address myAddress = Memberships.getInstance().getAddress(myID);
+        this.bestEffortBroadcast = new BestEffortBroadcast(myAddress.getPort());
+        this.myID = Memberships.getInstance().getProcessId(myAddress);
+        this.bestEffortBroadcast.registerObserver(this);
+        this.nbProcesses = Memberships.getInstance().getNbProcesses();
+
+        for (int num=1; num<=this.nbProcesses; num++) {
+            deliveredMessagesPerProcess.put(num, new ReceivedMessageHistory());
+        }
+    }
+
     //Note: IP has to be looked up by user, depending on what is in memberships file
     public UniformBroadcast(String myIP, int port) throws SocketException,
             BadIPException, UnreadableFileException, UninitialisedMembershipsException {
