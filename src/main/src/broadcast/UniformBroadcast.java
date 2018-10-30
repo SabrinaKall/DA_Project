@@ -101,8 +101,8 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
             observer.deliverURB(bm.getMessage(), bm.getOriginalSenderID());
         }
         addDelivered(bm);
-        //forwardedMessages.remove(bm.getUniqueIdentifier());
-        //acks.remove(bm.getUniqueIdentifier());
+        forwardedMessages.remove(bm.getUniqueIdentifier());
+        acks.remove(bm.getUniqueIdentifier());
     }
 
     private void addAcknowledgement(BroadcastMessage bm, int senderID) {
