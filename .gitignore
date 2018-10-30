@@ -30,3 +30,4 @@ DA_Project.iml
 .Rhistory
 src/main/resources
 src/test/resources
+.idea/*.xml
