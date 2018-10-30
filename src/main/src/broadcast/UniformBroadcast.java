@@ -1,7 +1,7 @@
 package src.broadcast;
 
-import javafx.util.Pair;
 import src.data.Address;
+import src.data.Pair;
 import src.data.ReceivedMessageHistory;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
@@ -12,10 +12,11 @@ import src.info.Memberships;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 import src.observer.broadcast.UniformBroadcastObserver;
 
-import java.io.IOException;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class UniformBroadcast implements BestEffortBroadcastObserver {
@@ -27,8 +28,8 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     private int nbProcesses;
 
     private Map<Integer, ReceivedMessageHistory> deliveredMessagesPerProcess = new HashMap<>();
-    private Set<Pair<Integer, Integer>> forwardedMessages = new HashSet<>();
-    private Map<Pair<Integer, Integer>, Set<Integer>> acks = new HashMap<>();
+    private Set<Pair> forwardedMessages = new HashSet<>();
+    private Map<Pair, Set<Integer>> acks = new HashMap<>();
 
     //Note: IP has to be looked up by user, depending on what is in memberships file
     public UniformBroadcast(String myIP, int port) throws SocketException,
@@ -87,18 +88,18 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
             observer.deliverURB(bm.getMessage(), bm.getOriginalSenderID());
         }
         addDelivered(bm);
-        forwardedMessages.remove(bm.getUniqueIdentifier());
-        acks.remove(bm.getUniqueIdentifier());
+        //forwardedMessages.remove(bm.getUniqueIdentifier());
+        //acks.remove(bm.getUniqueIdentifier());
     }
 
     private void addAcknowledgement(BroadcastMessage bm, int senderID) {
-        Pair<Integer, Integer> uniqueMessageID = bm.getUniqueIdentifier();
+        Pair uniqueMessageID = bm.getUniqueIdentifier();
         acks.putIfAbsent(uniqueMessageID, new HashSet<>());
         acks.get(uniqueMessageID).add(senderID);
     }
 
     private void echoMessage(BroadcastMessage bm) {
-        Pair<Integer, Integer> uniqueMessageID = bm.getUniqueIdentifier();
+        Pair uniqueMessageID = bm.getUniqueIdentifier();
         if(forwardedMessages.add(uniqueMessageID)) {
             bestEffortBroadcast.broadcast(bm);
         }

@@ -1,7 +1,7 @@
 package src.broadcast;
 
-import javafx.util.Pair;
 import src.data.Address;
+import src.data.Pair;
 import src.data.ReceivedMessageHistory;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
@@ -14,7 +14,10 @@ import src.observer.broadcast.BestEffortBroadcastObserver;
 import src.observer.broadcast.FIFOBroadcastObserver;
 
 import java.net.SocketException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FIFOBroadcast implements BestEffortBroadcastObserver {
@@ -28,9 +31,9 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
 
     private Map<Integer, Integer> highestDeliveredPerProcess = new HashMap<>();
     private Map<Integer, ReceivedMessageHistory> receivedMessagesPerProcess = new HashMap<>();
-    private Map<Pair<Integer, Integer>, Set<Integer>> acks = new HashMap<>();
-    private Map<Pair<Integer, Integer>, BroadcastMessage> pendingMessages = new HashMap<>();
-    private Set<Pair<Integer, Integer>> forwardedMessages = new HashSet<>();
+    private Map<Pair, Set<Integer>> acks = new HashMap<>();
+    private Map<Pair, BroadcastMessage> pendingMessages = new HashMap<>();
+    private Set<Pair> forwardedMessages = new HashSet<>();
 
     public FIFOBroadcast(int myID) throws SocketException, UninitialisedMembershipsException, UnreadableFileException, BadIPException {
         this.myID = myID;
@@ -88,13 +91,13 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
     }
 
     private void addAcknowledgement(BroadcastMessage messageBM, int senderID) {
-        Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
+        Pair uniqueMessageID = messageBM.getUniqueIdentifier();
         acks.putIfAbsent(uniqueMessageID, new HashSet<>());
         acks.get(uniqueMessageID).add(senderID);
     }
 
     private void echoMessage(BroadcastMessage messageBM) {
-        Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
+        Pair uniqueMessageID = messageBM.getUniqueIdentifier();
         if(forwardedMessages.add(uniqueMessageID)) {
             bestEffortBroadcast.broadcast(messageBM);
         }
@@ -113,7 +116,7 @@ public class FIFOBroadcast implements BestEffortBroadcastObserver {
     private void deliverPendingMessages(int senderID) {
         ReceivedMessageHistory messageHistory = receivedMessagesPerProcess.get(senderID);
         for (int seqID = getHighestDelivered(senderID)+1; seqID <= messageHistory.getSmallest(); seqID++) {
-            BroadcastMessage messageBM = pendingMessages.remove(new Pair<>(senderID, seqID));
+            BroadcastMessage messageBM = pendingMessages.remove(new Pair(senderID, seqID));
             if (canDeliver(messageBM)) {
                 deliver(messageBM);
             } else {
