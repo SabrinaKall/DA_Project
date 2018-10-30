@@ -64,7 +64,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
                 try {
                     fll.send(mNew, destID);
                     Thread.sleep(1000);
-                } catch (IOException e) {
+                } catch (IOException |NullPointerException e) {
                     //TODO: error logger, then continue sending
                 } catch (InterruptedException e) {
                     break;
