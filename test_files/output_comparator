@@ -1,0 +1,11 @@
+for i in `seq 1 10`
+do
+	for j in `seq 1 10`
+	do
+    	if (grep -Fxv -f "da_proc_$i.out" "da_proc_$j.out"); then
+			if (grep -Fxv -f "da_proc_$j.out" "da_proc_$i.out"); then
+				echo -e "Broadcast not uniform for $i and $j"
+			fi
+		fi
+	done
+done

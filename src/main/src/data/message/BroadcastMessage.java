@@ -1,6 +1,7 @@
 package src.data.message;
 
-import javafx.util.Pair;
+import src.data.Pair;
+
 
 public class BroadcastMessage extends SequenceMessage {
     private int originalSenderID;
@@ -14,8 +15,8 @@ public class BroadcastMessage extends SequenceMessage {
         return originalSenderID;
     }
 
-    public Pair<Integer, Integer> getUniqueIdentifier() {
-        return new Pair<>(originalSenderID, getMessageSequenceNumber());
+    public Pair getUniqueIdentifier() {
+        return new Pair(originalSenderID, getMessageSequenceNumber());
     }
 
 

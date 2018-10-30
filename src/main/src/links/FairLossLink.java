@@ -21,7 +21,7 @@ public class FairLossLink implements Link, Runnable {
     private DatagramSocket socket;
     private FairLossLinkObserver obsFLL = null;
 
-    public FairLossLink(int port) throws SocketException, UnreadableFileException, BadIPException, UninitialisedMembershipsException {
+    public FairLossLink(int port) throws SocketException, UninitialisedMembershipsException {
         this.socket = new DatagramSocket(port);
         this.memberInfo = Memberships.getInstance();
     }

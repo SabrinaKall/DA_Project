@@ -21,11 +21,11 @@ public class Memberships {
 
     private static boolean isLoaded = false;
     private static Memberships instance;
-    private static int nbProcesses;
-    private static Map<Integer, Address> memberships_by_id;
-    private static Map<Address, Integer> memberships_by_address;
+    private int nbProcesses;
+    private Map<Integer, Address> memberships_by_id;
+    private Map<Address, Integer> memberships_by_address;
 
-    public static Memberships getInstance() throws UninitialisedMembershipsException {
+    public synchronized static Memberships getInstance() throws UninitialisedMembershipsException {
         if (!isLoaded) {
             throw new UninitialisedMembershipsException();
         } else {

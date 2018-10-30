@@ -1,6 +1,6 @@
 package src.links;
 
-import javafx.util.Pair;
+import src.data.Pair;
 import src.data.ReceivedMessageHistory;
 import src.data.message.Message;
 import src.data.message.PerfectLinkMessage;
@@ -25,7 +25,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
 
     private Map<Integer, ReceivedMessageHistory> alreadyDeliveredPackets = new HashMap<>();
     private Map<Integer, AtomicInteger> sentProcessIds = new ConcurrentHashMap<>();
-    private Map<Pair<Integer, Integer>, Thread> sentMapping = new ConcurrentHashMap<>();
+    private Map<Pair, Thread> sentMapping = new ConcurrentHashMap<>();
 
     private FairLossLink fll;
 
@@ -71,7 +71,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
                 }
             }
         });
-        Pair<Integer, Integer> threadID = new Pair<>(destID, seqNum);
+        Pair threadID = new Pair(destID, seqNum);
         sentMapping.put(threadID, thread);
 
         thread.start();
@@ -82,7 +82,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         PerfectLinkMessage messagePL = (PerfectLinkMessage) msg;
 
         if (messagePL.isAck()) {
-            Pair<Integer, Integer> threadID = new Pair<>(senderID, messagePL.getMessageSequenceNumber());
+            Pair threadID = new Pair(senderID, messagePL.getMessageSequenceNumber());
             Thread thread = sentMapping.remove(threadID);
             if(thread != null) {
                 thread.interrupt();

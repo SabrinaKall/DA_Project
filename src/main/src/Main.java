@@ -8,13 +8,10 @@ import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.info.Memberships;
-import src.logging.Logger;
 import src.observer.broadcast.FIFOBroadcastObserver;
 import sun.misc.Signal;
 
 import java.net.SocketException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Main{
 
