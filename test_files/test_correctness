@@ -8,25 +8,31 @@
 
 #time to wait for correct processes to broadcast all messages (in seconds)
 #(should be adapted to the number of messages to send)
-time_to_finish=2
+
+time_to_finish=$1
 
 init_time=2
 
-nb_messages_broadcast=5
+nb_messages_broadcast=$1
+
+nb_processes=$3
 
 #configure lossy network simulation
 sudo tc qdisc change dev lo root netem delay 50ms 200ms loss 10% 25% reorder 25% 50%
 
 
-echo "5
-1 127.0.0.1 11001
-2 127.0.0.1 11002
-3 127.0.0.1 11003
-4 127.0.0.1 11004
-5 127.0.0.1 11005" >> membership
+
+rm membership
+
+echo "$nb_processes" >> membership
+
+for ((i=1;i<= $nb_processes ;i++)); 
+do 
+   echo "$i 127.0.0.1 1100$i" >> membership 
+done
 
 #start 5 processes, each broadcasting 1000 messages
-for i in `seq 1 5`
+for i in `seq 1 $nb_processes`
 do
     ./da_proc $i membership $nb_messages_broadcast &
     da_proc_id[$i]=$!
@@ -37,16 +43,30 @@ sleep $init_time
 
 #do some nasty stuff like process crashes and delays
 #example:
-kill -STOP "${da_proc_id[1]}" #pause process 1
+seed=$RANDOM
+victim1=1
+victim2=2
+victim3=3
+victim4=4
+
+echo "victim1 (paused): $victim1"
+echo "victim2 (killed): $victim2"
+echo "victim3 (paused): $victim3"
+echo "victim4 (killed): $victim4"
+
+kill -STOP "${da_proc_id[$victim1]}" #pause process 1
 sleep 0.5
-kill -STOP "${da_proc_id[3]}" #pause process 3
+
+kill -STOP "${da_proc_id[$victim3]}" #pause process 3
 sleep 1
-kill -TERM "${da_proc_id[2]}" #crash process 2
-da_proc_id[2]=""
-kill -CONT "${da_proc_id[3]}" #resume process 3
+
+kill -TERM "${da_proc_id[$victim2]}" #crash process 2
+da_proc_id[$victim]=""
+
+kill -CONT "${da_proc_id[$victim3]}" #resume process 3
 
 #start broadcasting
-for i in `seq 1 5`
+for i in `seq 1 $nb_processes`
 do
     if [ -n "${da_proc_id[$i]}" ]; then
 	kill -USR2 "${da_proc_id[$i]}"
@@ -55,15 +75,16 @@ done
 
 #do some more nasty stuff
 #example:
-kill -TERM "${da_proc_id[4]}" #crash process 4
-da_proc_id[4]=""
-kill -CONT "${da_proc_id[1]}" #resume process 1
+kill -TERM "${da_proc_id[$victim4]}" #crash process 4
+da_proc_id[$victim]=""
+
+kill -CONT "${da_proc_id[$victim1]}" #resume process 1
 
 #leave some time for the correct processes to broadcast all messages
 sleep $time_to_finish
 
 #stop all processes
-for i in `seq 1 5`
+for i in `seq 1 $nb_processes`
 do
     if [ -n "${da_proc_id[$i]}" ]; then
 	kill -TERM "${da_proc_id[$i]}"
@@ -71,12 +92,20 @@ do
 done
 
 #wait until all processes stop
-for i in `seq 1 5`
+for i in `seq 1 $nb_processes`
 do
 	wait "${da_proc_id[$i]}"
 done
 
 #check logs for correctness
-#... (not implemented here)
+for i in `seq 1 $nb_processes`
+do
+	wc -l  output/da_proc_$i.out
+done
+
+n1=$(($nb_processes + 1))
+n2=$(($n1 * $nb_messages_broadcast))
+
+echo "$n2 expected without deaths"
 
 echo "Correctness test done."
