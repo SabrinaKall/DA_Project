@@ -34,7 +34,7 @@ done
 sleep $init_time
 
 #start broadcasting
-echo "Evaluating application for ${evaluation_time} seconds."
+echo "Evaluating application (${nb_processes} processes with ${nb_messages} messages) for ${evaluation_time} seconds."
 for i in `seq 1 $nb_processes`
 do
     if [ -n "${da_proc_id[$i]}" ]; then
@@ -60,6 +60,13 @@ do
 done
 
 #count delivered messages in the logs
-#... (not implemented here)
+for i in `seq 1 $nb_processes`
+do
+	wc -l  output/da_proc_$i.out
+done
 
+n1=$(($nb_processes + 1))
+n2=$(($n1 * $nb_messages))
+
+echo "$n2 Expected"
 echo "Performance test done."
