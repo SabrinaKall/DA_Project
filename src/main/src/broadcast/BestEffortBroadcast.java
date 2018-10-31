@@ -1,11 +1,8 @@
 package src.broadcast;
 
-
-import src.data.message.Message;
-import src.exception.BadIPException;
-import src.exception.UninitialisedMembershipsException;
-import src.exception.UnreadableFileException;
 import src.data.Memberships;
+import src.data.message.Message;
+import src.exception.UninitialisedMembershipsException;
 import src.links.PerfectLink;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 import src.observer.link.PerfectLinkObserver;
@@ -18,7 +15,7 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
     private BestEffortBroadcastObserver observer;
     private int nbProcesses;
 
-    public BestEffortBroadcast(int port) throws SocketException, BadIPException, UnreadableFileException, UninitialisedMembershipsException {
+    public BestEffortBroadcast(int port) throws SocketException, UninitialisedMembershipsException {
         this.link = new PerfectLink(port);
         this.link.registerObserver(this);
         nbProcesses = Memberships.getInstance().getNbProcesses();
@@ -37,7 +34,6 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
             link.send(message, id);
         }
     }
-
 
     @Override
     public void deliverPL(Message msg, int senderID) {

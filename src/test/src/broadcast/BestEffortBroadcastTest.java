@@ -73,8 +73,6 @@ class BestEffortBroadcastTest {
         while (sender == null) {
             try {
                 sender = new BestEffortBroadcast(SENDER_PORT);
-            } catch (BadIPException | UnreadableFileException e) {
-                Assertions.fail(e.getMessage());
             } catch (SocketException ignored) {
             } catch (UninitialisedMembershipsException e) {
                 e.printStackTrace();
@@ -87,8 +85,6 @@ class BestEffortBroadcastTest {
                 try {
                     rec = new BestEffortBroadcast(port);
                 } catch (SocketException ignored) {
-                } catch (BadIPException | UnreadableFileException e) {
-                    Assertions.fail(e.getMessage());
                 } catch (UninitialisedMembershipsException e) {
                     e.printStackTrace();
                 }
