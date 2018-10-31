@@ -32,15 +32,18 @@ public class PerfectLink implements Link, FairLossLinkObserver {
 
     private PerfectLinkObserver perfectLinkObserver = null;
 
-    public PerfectLink(int port) throws SocketException, UninitialisedMembershipsException {
+    public PerfectLink(int port) throws UninitialisedMembershipsException, SocketException {
+
+        int nbProcesses = Memberships.getInstance().getNbProcesses();
+
+        for (int processID=1; processID<=nbProcesses; ++processID) {
+            alreadyDeliveredPackets.put(processID, new ReceivedMessageHistory());
+            sentProcessIds.put(processID, new AtomicInteger(0));
+        }
+
         this.fll = new FairLossLink(port);
         this.fll.registerObserver(this);
 
-        int nbProcesses = Memberships.getInstance().getNbProcesses();
-        for (int num=1; num<=nbProcesses; num++) {
-            alreadyDeliveredPackets.put(num, new ReceivedMessageHistory());
-            sentProcessIds.put(num, new AtomicInteger(0));
-        }
         threadFLLDeliver = new Thread(this.fll);
         threadFLLDeliver.start();
         threadPLSend = createSendingThread();

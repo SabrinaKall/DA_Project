@@ -31,11 +31,11 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     private Set<Pair> forwardedMessages = new HashSet<>();
     private Map<Pair, Set<Integer>> acks = new HashMap<>();
 
-    public UniformBroadcast(int myID) throws SocketException,
-            BadIPException, UnreadableFileException, UninitialisedMembershipsException {
+    public UniformBroadcast(int myID) throws UninitialisedMembershipsException, SocketException {
+
+        this.myID = myID;
         Address myAddress = Memberships.getInstance().getAddress(myID);
 
-        this.myID = Memberships.getInstance().getProcessId(myAddress);
         this.nbProcesses = Memberships.getInstance().getNbProcesses();
 
         for (int num=1; num<=this.nbProcesses; num++) {

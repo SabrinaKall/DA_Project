@@ -47,7 +47,6 @@ public class FairLossLink implements Link, Runnable {
 
 
     public Packet receive() throws IOException, ClassNotFoundException {
-        //TODO: watch out for longer strings
         byte[] buffer = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
@@ -74,19 +73,19 @@ public class FairLossLink implements Link, Runnable {
                     return;
                 } else {
                     System.err.println("FairLossLink::run: error when reading from socket. Ignoring...");
-                    e.printStackTrace();
                     continue;
                 }
             } catch (ClassNotFoundException e) {
                 System.err.println("FairLossLink::run: error converting received packet to local class. Ignoring...");
-                e.printStackTrace();
                 continue;
             }
 
             if (hasObserver()) {
-                /* Not worth threading this. The speedup is insignificant vs the network cost
-                * and it we avoid having to deal with concurrent 'deliver' calls on the observers
-                * (since they are called sequentially) making the code simpler */
+                /** Note:
+                 *  This part is not worth threading. The speedup is insignificant vs the network cost
+                 *  and we avoid having to deal with concurrent 'deliver' calls on the observers
+                 *  (since they are called sequentially), making the code simpler
+                 **/
                 this.obsFLL.deliverFLL(p.getMessage(), p.getProcessId());
             }
         }
