@@ -34,27 +34,30 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     public UniformBroadcast(int myID) throws SocketException,
             BadIPException, UnreadableFileException, UninitialisedMembershipsException {
         Address myAddress = Memberships.getInstance().getAddress(myID);
-        this.bestEffortBroadcast = new BestEffortBroadcast(myAddress.getPort());
+
         this.myID = Memberships.getInstance().getProcessId(myAddress);
-        this.bestEffortBroadcast.registerObserver(this);
         this.nbProcesses = Memberships.getInstance().getNbProcesses();
 
         for (int num=1; num<=this.nbProcesses; num++) {
             deliveredMessagesPerProcess.put(num, new ReceivedMessageHistory());
         }
+
+        this.bestEffortBroadcast = new BestEffortBroadcast(myAddress.getPort());
+        this.bestEffortBroadcast.registerObserver(this);
     }
 
     //Note: IP has to be looked up by user, depending on what is in memberships file
     public UniformBroadcast(String myIP, int port) throws SocketException,
             BadIPException, UnreadableFileException, UninitialisedMembershipsException {
-        this.bestEffortBroadcast = new BestEffortBroadcast(port);
         this.myID = Memberships.getInstance().getProcessId(new Address(myIP, port));
-        this.bestEffortBroadcast.registerObserver(this);
         this.nbProcesses = Memberships.getInstance().getNbProcesses();
 
         for (int num=1; num<=this.nbProcesses; num++) {
             deliveredMessagesPerProcess.put(num, new ReceivedMessageHistory());
         }
+
+        this.bestEffortBroadcast = new BestEffortBroadcast(port);
+        this.bestEffortBroadcast.registerObserver(this);
     }
 
     public void registerObserver(UniformBroadcastObserver observer) {
@@ -106,13 +109,13 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     }
 
     private void addAcknowledgement(BroadcastMessage bm, int senderID) {
-        Pair<Integer, Integer> uniqueMessageID = bm.getUniqueIdentifier();
+        Pair uniqueMessageID = bm.getUniqueIdentifier();
         acks.putIfAbsent(uniqueMessageID, new HashSet<>());
         acks.get(uniqueMessageID).add(senderID);
     }
 
     private void echoMessage(BroadcastMessage bm) {
-        Pair<Integer, Integer> uniqueMessageID = bm.getUniqueIdentifier();
+        Pair uniqueMessageID = bm.getUniqueIdentifier();
         if(forwardedMessages.add(uniqueMessageID)) {
             bestEffortBroadcast.broadcast(bm);
         }

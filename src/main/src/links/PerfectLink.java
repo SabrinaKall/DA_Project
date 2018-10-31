@@ -23,7 +23,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     private Thread threadFLLDeliver;
     private Thread threadPLSend;
 
-    private Map<Pair<Integer,Integer>, Message> toSend = new ConcurrentHashMap<>();
+    private Map<Pair, PerfectLinkMessage> toSend = new ConcurrentHashMap<>();
 
     private Map<Integer, ReceivedMessageHistory> alreadyDeliveredPackets = new HashMap<>();
     private Map<Integer, AtomicInteger> sentProcessIds = new ConcurrentHashMap<>();
@@ -58,12 +58,13 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     private Thread createSendingThread() {
         return new Thread(() -> {
             while (true) {
-                Set<Map.Entry<Pair<Integer, Integer>, Message>> KVSet = toSend.entrySet();
-                for (Map.Entry<Pair<Integer, Integer>,Message> entry : KVSet) {
+                Set<Map.Entry<Pair, PerfectLinkMessage>> KVSet = toSend.entrySet();
+                for (Map.Entry<Pair, PerfectLinkMessage> entry : KVSet) {
                     try {
                         int destID = entry.getKey().first();
-                        Message plMsg = entry.getValue();
-                        System.out.println("SENDING: ");
+                        PerfectLinkMessage plMsg = entry.getValue();
+                        if (plMsg.isAck()) toSend.remove(entry.getKey());
+                        //System.out.println("SENDING: ");
                         fll.send(plMsg, destID);
                     } catch (IOException | NullPointerException e) {
                         //TODO: error logger, then continue sending
@@ -71,7 +72,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
                 }
 
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -84,7 +85,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         int seqNum = sentProcessIds.get(destID).incrementAndGet();
         PerfectLinkMessage mNew = new PerfectLinkMessage(message, seqNum, false);
 
-        toSend.put(new Pair<>(destID, seqNum), mNew);
+        toSend.put(new Pair(destID, seqNum), mNew);
     }
 
     @Override
@@ -92,8 +93,9 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         PerfectLinkMessage messagePL = (PerfectLinkMessage) msg;
 
         if (messagePL.isAck()) {
-            Pair<Integer, Integer> msgID = new Pair<>(senderID, messagePL.getMessageSequenceNumber());
+            Pair msgID = new Pair(senderID, messagePL.getMessageSequenceNumber());
             toSend.remove(msgID);
+            return;
         }
 
         acknowledge(messagePL, senderID);
@@ -107,11 +109,14 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     private void acknowledge(PerfectLinkMessage messagePL, int senderID) {
         int receivedSeqNum = messagePL.getMessageSequenceNumber();
         PerfectLinkMessage ack = new PerfectLinkMessage(null, receivedSeqNum, true);
+        toSend.put(new Pair(senderID, 0), ack);
+        /*
         try {
             fll.send(ack, senderID);
         } catch (IOException e) {
             //TODO:logger then move on
         }
+        */
     }
 
     public void shutdown() {

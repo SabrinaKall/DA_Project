@@ -2,17 +2,17 @@ package src.data;
 
 import java.util.Objects;
 
-public class Pair<T1,T2> {
-    private T1 first;
-    private T2 second;
+public class Pair {
+    private int first;
+    private int second;
 
-    public Pair(T1 first, T2 second) {
+    public Pair(int first, int second) {
         this.first = first;
         this.second = second;
     }
 
-    public T1 first() { return first; }
-    public T2 second() { return second; }
+    public int first() { return first; }
+    public int second() { return second; }
 
     @Override
     public boolean equals(Object o) {
