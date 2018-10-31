@@ -95,6 +95,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         if (messagePL.isAck()) {
             Pair msgID = new Pair(senderID, messagePL.getMessageSequenceNumber());
             toSend.remove(msgID);
+            return;
         }
 
         acknowledge(messagePL, senderID);

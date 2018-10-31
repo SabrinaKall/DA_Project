@@ -92,8 +92,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     }
 
     private boolean hasDelivered(BroadcastMessage bm) {
-        ReceivedMessageHistory rmh = deliveredMessagesPerProcess.get(bm.getOriginalSenderID());
-        return rmh.contains(bm.getMessageSequenceNumber());
+        return deliveredMessagesPerProcess.get(bm.getOriginalSenderID()).contains(bm.getMessageSequenceNumber());
     }
 
     private void addDelivered(BroadcastMessage bm) {
