@@ -5,9 +5,7 @@ import src.data.ReceivedMessageHistory;
 import src.data.message.Message;
 import src.data.message.PerfectLinkMessage;
 
-import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
-import src.exception.UnreadableFileException;
 import src.info.Memberships;
 import src.observer.link.FairLossLinkObserver;
 import src.observer.link.PerfectLinkObserver;
@@ -16,32 +14,37 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PerfectLink implements Link, FairLossLinkObserver {
 
-    private Thread threadFLLrun;
+    private Thread threadFLLDeliver;
+    private Thread threadPLSend;
+
+    private Map<Pair<Integer,Integer>, Message> toSend = new ConcurrentHashMap<>();
 
     private Map<Integer, ReceivedMessageHistory> alreadyDeliveredPackets = new HashMap<>();
     private Map<Integer, AtomicInteger> sentProcessIds = new ConcurrentHashMap<>();
-    private Map<Pair, Thread> sentMapping = new ConcurrentHashMap<>();
 
     private FairLossLink fll;
 
     private PerfectLinkObserver perfectLinkObserver = null;
-    private int nbProcesses;
 
-    public PerfectLink(int port) throws SocketException, BadIPException, UnreadableFileException, UninitialisedMembershipsException {
+    public PerfectLink(int port) throws SocketException, UninitialisedMembershipsException {
         this.fll = new FairLossLink(port);
         this.fll.registerObserver(this);
-        threadFLLrun = new Thread(this.fll);
-        threadFLLrun.start();
-        this.nbProcesses = Memberships.getInstance().getNbProcesses();
 
-        for (int num=1; num<=this.nbProcesses; num++) {
+        int nbProcesses = Memberships.getInstance().getNbProcesses();
+        for (int num=1; num<=nbProcesses; num++) {
             alreadyDeliveredPackets.put(num, new ReceivedMessageHistory());
+            sentProcessIds.put(num, new AtomicInteger(0));
         }
+        threadFLLDeliver = new Thread(this.fll);
+        threadFLLDeliver.start();
+        threadPLSend = createSendingThread();
+        threadPLSend.start();
     }
 
     public void registerObserver(PerfectLinkObserver perfectLinkObserver) {
@@ -52,29 +55,36 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         return this.perfectLinkObserver != null;
     }
 
-    @Override
-    public void send(Message message, int destID) {
-        sentProcessIds.putIfAbsent(destID, new AtomicInteger(0));
-        int seqNum = sentProcessIds.get(destID).incrementAndGet();
-
-        PerfectLinkMessage mNew = new PerfectLinkMessage(message, seqNum, false);
-
-        Thread thread = new Thread(() -> {
+    private Thread createSendingThread() {
+        return new Thread(() -> {
             while (true) {
+                Set<Map.Entry<Pair<Integer, Integer>, Message>> KVSet = toSend.entrySet();
+                for (Map.Entry<Pair<Integer, Integer>,Message> entry : KVSet) {
+                    try {
+                        int destID = entry.getKey().first();
+                        Message plMsg = entry.getValue();
+                        System.out.println("SENDING: ");
+                        fll.send(plMsg, destID);
+                    } catch (IOException | NullPointerException e) {
+                        //TODO: error logger, then continue sending
+                    }
+                }
+
                 try {
-                    fll.send(mNew, destID);
-                    Thread.sleep(1000);
-                } catch (IOException |NullPointerException e) {
-                    //TODO: error logger, then continue sending
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     break;
                 }
             }
         });
-        Pair threadID = new Pair(destID, seqNum);
-        sentMapping.put(threadID, thread);
+    }
 
-        thread.start();
+    @Override
+    public void send(Message message, int destID) {
+        int seqNum = sentProcessIds.get(destID).incrementAndGet();
+        PerfectLinkMessage mNew = new PerfectLinkMessage(message, seqNum, false);
+
+        toSend.put(new Pair<>(destID, seqNum), mNew);
     }
 
     @Override
@@ -82,12 +92,8 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         PerfectLinkMessage messagePL = (PerfectLinkMessage) msg;
 
         if (messagePL.isAck()) {
-            Pair threadID = new Pair(senderID, messagePL.getMessageSequenceNumber());
-            Thread thread = sentMapping.remove(threadID);
-            if(thread != null) {
-                thread.interrupt();
-            }
-            return;
+            Pair<Integer, Integer> msgID = new Pair<>(senderID, messagePL.getMessageSequenceNumber());
+            toSend.remove(msgID);
         }
 
         acknowledge(messagePL, senderID);
@@ -109,8 +115,8 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     }
 
     public void shutdown() {
-        sentMapping.forEach((k, v) -> v.interrupt());
-        threadFLLrun.interrupt();
+        threadPLSend.interrupt();
+        threadFLLDeliver.interrupt();
         fll.shutdown();
     }
 

@@ -91,13 +91,13 @@ public class FIFOBroadcastOld implements BestEffortBroadcastObserver {
     }
 
     private void addAcknowledgement(BroadcastMessage messageBM, int senderID) {
-        Pair uniqueMessageID = messageBM.getUniqueIdentifier();
+        Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
         acks.putIfAbsent(uniqueMessageID, new HashSet<>());
         acks.get(uniqueMessageID).add(senderID);
     }
 
     private void echoMessage(BroadcastMessage messageBM) {
-        Pair uniqueMessageID = messageBM.getUniqueIdentifier();
+        Pair<Integer, Integer> uniqueMessageID = messageBM.getUniqueIdentifier();
         if(forwardedMessages.add(uniqueMessageID)) {
             bestEffortBroadcast.broadcast(messageBM);
         }

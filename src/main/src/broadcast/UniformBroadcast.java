@@ -106,13 +106,13 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     }
 
     private void addAcknowledgement(BroadcastMessage bm, int senderID) {
-        Pair uniqueMessageID = bm.getUniqueIdentifier();
+        Pair<Integer, Integer> uniqueMessageID = bm.getUniqueIdentifier();
         acks.putIfAbsent(uniqueMessageID, new HashSet<>());
         acks.get(uniqueMessageID).add(senderID);
     }
 
     private void echoMessage(BroadcastMessage bm) {
-        Pair uniqueMessageID = bm.getUniqueIdentifier();
+        Pair<Integer, Integer> uniqueMessageID = bm.getUniqueIdentifier();
         if(forwardedMessages.add(uniqueMessageID)) {
             bestEffortBroadcast.broadcast(bm);
         }
@@ -127,5 +127,3 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
         bestEffortBroadcast.shutdown();
     }
 }
-
-

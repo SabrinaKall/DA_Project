@@ -109,12 +109,6 @@ class PerfectLinksTest {
         } catch (InterruptedException e) {
             Assertions.fail("InterruptedException thrown: " + e.getMessage());
             e.printStackTrace();
-        } catch (BadIPException e) {
-            Assertions.fail("BadIpException thrown: " + e.getMessage());
-            e.printStackTrace();
-        } catch (UnreadableFileException e) {
-            Assertions.fail("UnreadableFileException thrown: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 }
