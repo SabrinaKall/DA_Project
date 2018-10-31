@@ -7,7 +7,7 @@ import src.data.message.Message;
 import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
-import src.info.Memberships;
+import src.data.Memberships;
 import src.logging.Logger;
 import src.observer.broadcast.FIFOBroadcastObserver;
 import src.observer.broadcast.UniformBroadcastObserver;

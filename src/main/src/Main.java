@@ -7,7 +7,7 @@ import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
-import src.info.Memberships;
+import src.data.Memberships;
 import src.observer.broadcast.FIFOBroadcastObserver;
 import sun.misc.Signal;
 
@@ -25,9 +25,7 @@ public class Main{
         }
 
         @Override
-        public void deliverFIFOB(Message msg, int senderID) {
-            BroadcastMessage broadcastMessage = (BroadcastMessage) msg;
-        }
+        public void deliverFIFOB(Message msg, int senderID) {}
 
     }
 

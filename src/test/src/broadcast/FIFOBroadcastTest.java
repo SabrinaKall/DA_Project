@@ -10,7 +10,7 @@ import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
-import src.info.Memberships;
+import src.data.Memberships;
 import src.observer.broadcast.FIFOBroadcastObserver;
 
 import java.net.SocketException;

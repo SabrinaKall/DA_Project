@@ -5,7 +5,7 @@ import src.data.message.Message;
 import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
-import src.info.Memberships;
+import src.data.Memberships;
 import src.links.PerfectLink;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 import src.observer.link.PerfectLinkObserver;

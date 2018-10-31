@@ -11,10 +11,9 @@ import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 
-import java.net.InetAddress;
 import java.net.SocketException;
 
-import src.info.Memberships;
+import src.data.Memberships;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 
 import java.util.*;

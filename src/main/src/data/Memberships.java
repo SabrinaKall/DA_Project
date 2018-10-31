@@ -1,14 +1,11 @@
-package src.info;
+package src.data;
 
-import src.data.Address;
 import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URI;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,6 +47,7 @@ public class Memberships {
     }
 
     private Memberships(String filename) throws BadIPException, UnreadableFileException {
+
         memberships_by_id = new HashMap<>();
         memberships_by_address = new HashMap<>();
 
@@ -71,14 +69,12 @@ public class Memberships {
                     memberships_by_id.put(processId, address);
                     memberships_by_address.put(address, processId);
                 } catch (UnknownHostException e) {
-                    //TODO: logger -> ip address bad -> shut down program
-                    String errorMessage = "Unknown address for process " + processId + ": not saved";
+                    String errorMessage = "Unknown address for process " + processId;
                     throw new BadIPException(errorMessage);
                 }
             }
 
         } catch (IOException e) {
-            //TODO:logger: could not read file -> shut down program
             throw new UnreadableFileException("Membership file unreadable");
         }
 

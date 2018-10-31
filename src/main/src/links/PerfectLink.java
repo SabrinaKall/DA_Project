@@ -6,7 +6,7 @@ import src.data.message.Message;
 import src.data.message.PerfectLinkMessage;
 
 import src.exception.UninitialisedMembershipsException;
-import src.info.Memberships;
+import src.data.Memberships;
 import src.observer.link.FairLossLinkObserver;
 import src.observer.link.PerfectLinkObserver;
 

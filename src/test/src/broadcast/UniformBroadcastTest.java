@@ -9,13 +9,12 @@ import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
-import java.io.IOException;
+
 import java.net.SocketException;
 
-import src.info.Memberships;
+import src.data.Memberships;
 import src.observer.broadcast.UniformBroadcastObserver;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 

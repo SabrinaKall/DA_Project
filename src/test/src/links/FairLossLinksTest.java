@@ -2,7 +2,6 @@ package src.links;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import src.data.message.Message;
 import src.data.Packet;
@@ -10,7 +9,7 @@ import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
-import src.info.Memberships;
+import src.data.Memberships;
 
 import java.io.IOException;
 import java.net.SocketException;

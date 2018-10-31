@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
-import src.info.Memberships;
 
 class MembershipTest {
 

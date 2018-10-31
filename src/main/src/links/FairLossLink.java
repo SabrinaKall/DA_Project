@@ -4,9 +4,7 @@ import src.data.Address;
 import src.data.message.Message;
 import src.data.Packet;
 import src.exception.UninitialisedMembershipsException;
-import src.exception.UnreadableFileException;
-import src.exception.BadIPException;
-import src.info.Memberships;
+import src.data.Memberships;
 import src.observer.link.FairLossLinkObserver;
 
 import java.io.IOException;
