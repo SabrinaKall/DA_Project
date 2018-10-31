@@ -30,14 +30,6 @@ public class Logger {
         tempLogs.add(message);
     }
 
-    private String messageWithEndline(String message) {
-        if(message.charAt(message.length()-1) == '\n') {
-            return message;
-        } else {
-            return message + '\n';
-        }
-    }
-
     public void logBroadcast(int seqNr) {
         log("b " + seqNr + "\n");
     }
@@ -46,20 +38,6 @@ public class Logger {
         log("d " + sender + " " + seqNr + "\n");
     }
 
-    //Before shutdown, write all saved logs to file
-    public void writeToFile() {
-        List<String> written = new ArrayList<>();
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(filepath, true))) {
-            for(String message: tempLogs) {
-                writer.write(messageWithEndline(message));
-                written.add(message);
-            }
-        } catch (IOException e) {
-            //java.exception handling left as an exercise for the reader
-            tempLogs.removeAll(written);
-        }
-        tempLogs.removeAll(written);
-    }
 
     private void createLogFile(int processID) throws LogFileInitiationException {
         File parentDir = new File(PARENT_DIRECTORY);
@@ -93,6 +71,29 @@ public class Logger {
             throw new LogFileInitiationException(
                     "Could not create file: " + logFile.toString() + "(" + e.getMessage() + ")");
         }
+    }
+
+    private String messageWithEndline(String message) {
+        if(message.charAt(message.length()-1) == '\n') {
+            return message;
+        } else {
+            return message + '\n';
+        }
+    }
+
+    //Before shutdown, write all saved logs to file
+    private void writeToFile() {
+        List<String> written = new ArrayList<>();
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(filepath, true))) {
+            for(String message: tempLogs) {
+                writer.write(messageWithEndline(message));
+                written.add(message);
+            }
+        } catch (IOException e) {
+            System.out.println("Unable to write to file " + filepath + ": " + e.getMessage());
+            tempLogs.removeAll(written);
+        }
+        tempLogs.removeAll(written);
     }
 
 
