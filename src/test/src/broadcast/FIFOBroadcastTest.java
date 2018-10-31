@@ -8,6 +8,7 @@ import src.data.message.BroadcastMessage;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
+import src.exception.LogFileInitiationException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.data.Memberships;
@@ -93,6 +94,8 @@ public class FIFOBroadcastTest {
                 Assertions.fail(e.getMessage());
             } catch (UninitialisedMembershipsException e) {
                 e.printStackTrace();
+            } catch (LogFileInitiationException e) {
+                e.printStackTrace();
             }
         }
 
@@ -105,6 +108,8 @@ public class FIFOBroadcastTest {
                 } catch (BadIPException | UnreadableFileException e) {
                     Assertions.fail(e.getMessage());
                 } catch (UninitialisedMembershipsException e) {
+                    e.printStackTrace();
+                } catch (LogFileInitiationException e) {
                     e.printStackTrace();
                 }
             }

@@ -1,5 +1,7 @@
 package src.logging;
 
+import src.exception.LogFileInitiationException;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -11,40 +13,21 @@ public class Logger {
 
     private static final String PARENT_DIRECTORY = "./output/";
 
-    private int processID;
     private String filepath;
 
     //do not write to file immediately (constantly opening the file waste of time) -> save in list
     private List<String> tempLogs = new ArrayList<>();
 
-    public Logger(int processID) {
-        this.processID = processID;
+    public Logger(int processID) throws LogFileInitiationException {
 
-        File parentDir = new File(PARENT_DIRECTORY);
-        if(!parentDir.exists()) {
-            parentDir.mkdirs();
-        }
-
-        this.filepath = PARENT_DIRECTORY + "da_proc_" + processID + ".out";
-        File logFile = new File(filepath);
-
-        if(logFile.exists()) {
-            logFile.delete();
-        }
-        try {
-            if(!logFile.exists()) {
-                logFile.createNewFile();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        createLogFile(processID);
 
         prepareGracefulTermination();
     }
 
+
     private void log(String message) {
         tempLogs.add(message);
-        //System.out.print(message);
     }
 
     private String messageWithEndline(String message) {
@@ -76,6 +59,40 @@ public class Logger {
             tempLogs.removeAll(written);
         }
         tempLogs.removeAll(written);
+    }
+
+    private void createLogFile(int processID) throws LogFileInitiationException {
+        File parentDir = new File(PARENT_DIRECTORY);
+        if(!parentDir.exists()) {
+            boolean createdDirectory = parentDir.mkdirs();
+
+            if(!createdDirectory) {
+                throw new LogFileInitiationException(
+                        "Could not create directory: " + parentDir.toString() +" for process "+ processID);
+            }
+        }
+
+        this.filepath = PARENT_DIRECTORY + "da_proc_" + processID + ".out";
+        File logFile = new File(filepath);
+
+        if(logFile.exists()) {
+            boolean deletedOldFile = logFile.delete();
+            if(!deletedOldFile) {
+                throw new LogFileInitiationException("Could not delete old file: " + logFile.toString());
+            }
+        }
+
+        try {
+            if(!logFile.exists()) {
+                boolean createdFile = logFile.createNewFile();
+                if(!createdFile) {
+                    throw new LogFileInitiationException("Could not create file: " + logFile.toString());
+                }
+            }
+        } catch (IOException e) {
+            throw new LogFileInitiationException(
+                    "Could not create file: " + logFile.toString() + "(" + e.getMessage() + ")");
+        }
     }
 
 

@@ -5,6 +5,7 @@ import src.data.Pair;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
 import src.exception.BadIPException;
+import src.exception.LogFileInitiationException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.data.Memberships;
@@ -28,7 +29,7 @@ public class FIFOBroadcast implements UniformBroadcastObserver {
     private Map<Integer, Integer> highestDeliveredPerProcess = new HashMap<>();
     private Map<Pair, BroadcastMessage> pendingMessages = new HashMap<>();
 
-    public FIFOBroadcast(int myID) throws SocketException, UninitialisedMembershipsException, UnreadableFileException, BadIPException {
+    public FIFOBroadcast(int myID) throws SocketException, UninitialisedMembershipsException, UnreadableFileException, BadIPException, LogFileInitiationException {
         this.myID = myID;
         this.uniformBroadcast = new UniformBroadcast(myID);
         this.uniformBroadcast.registerObserver(this);
@@ -40,7 +41,7 @@ public class FIFOBroadcast implements UniformBroadcastObserver {
         }
     }
 
-    public FIFOBroadcast(String myIP, int port) throws SocketException, UninitialisedMembershipsException, UnreadableFileException, BadIPException {
+    public FIFOBroadcast(String myIP, int port) throws SocketException, UninitialisedMembershipsException, UnreadableFileException, BadIPException, LogFileInitiationException {
         this.uniformBroadcast = new UniformBroadcast(myIP, port);
         this.uniformBroadcast.registerObserver(this);
 

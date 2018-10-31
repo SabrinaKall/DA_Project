@@ -5,6 +5,7 @@ import src.data.message.BroadcastMessage;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
+import src.exception.LogFileInitiationException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.data.Memberships;
@@ -54,6 +55,9 @@ public class Main{
             e.printStackTrace();
         } catch (SocketException e) {
             e.printStackTrace();
+        } catch (LogFileInitiationException e) {
+            System.out.println(e.getMessage());
+            return;
         }
 
         boolean caughtUSR2 = false;
