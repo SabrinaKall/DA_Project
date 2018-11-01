@@ -1,7 +1,7 @@
 package src.broadcast;
 
 import src.data.Memberships;
-import src.data.Pair;
+import src.data.UniqueMessageID;
 import src.data.message.broadcast.BroadcastMessage;
 import src.data.message.Message;
 import src.exception.LogFileInitiationException;
@@ -24,7 +24,7 @@ public class FIFOBroadcast implements UniformBroadcastObserver {
     private Logger logger;
 
     private Map<Integer, Integer> highestDeliveredPerProcess = new HashMap<>();
-    private Map<Pair, BroadcastMessage> pendingMessages = new HashMap<>();
+    private Map<UniqueMessageID, BroadcastMessage> pendingMessages = new HashMap<>();
 
 
     public FIFOBroadcast(int myID) throws SocketException, UninitialisedMembershipsException, LogFileInitiationException {
@@ -75,11 +75,11 @@ public class FIFOBroadcast implements UniformBroadcastObserver {
 
     private void deliverPendingMessages(int senderID) {
         int seqID = getHighestDelivered(senderID)+1;
-        BroadcastMessage messageBM = pendingMessages.get(new Pair(senderID, seqID));
+        BroadcastMessage messageBM = pendingMessages.get(new UniqueMessageID(senderID, seqID));
         while (messageBM != null) {
             deliver(messageBM);
             seqID++;
-            messageBM = pendingMessages.get(new Pair(senderID, seqID));
+            messageBM = pendingMessages.get(new UniqueMessageID(senderID, seqID));
         }
     }
 

@@ -1,6 +1,6 @@
 package src.data.message.broadcast;
 
-import src.data.Pair;
+import src.data.UniqueMessageID;
 import src.data.message.Message;
 import src.data.message.SequenceMessage;
 
@@ -17,8 +17,8 @@ public class BroadcastMessage extends SequenceMessage {
         return originalSenderID;
     }
 
-    public Pair getUniqueIdentifier() {
-        return new Pair(originalSenderID, getMessageSequenceNumber());
+    public UniqueMessageID getUniqueIdentifier() {
+        return new UniqueMessageID(originalSenderID, getMessageSequenceNumber());
     }
 
 

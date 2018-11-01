@@ -2,7 +2,7 @@ package src.broadcast;
 
 import src.data.Address;
 import src.data.Memberships;
-import src.data.Pair;
+import src.data.UniqueMessageID;
 import src.data.ReceptionTracker;
 import src.data.message.broadcast.BroadcastMessage;
 import src.data.message.Message;
@@ -26,8 +26,8 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     private int nbProcesses;
 
     private Map<Integer, ReceptionTracker> deliveredMessagesPerProcess = new HashMap<>();
-    private Set<Pair> forwardedMessages = new HashSet<>();
-    private Map<Pair, Set<Integer>> acks = new HashMap<>();
+    private Set<UniqueMessageID> forwardedMessages = new HashSet<>();
+    private Map<UniqueMessageID, Set<Integer>> acks = new HashMap<>();
 
     UniformBroadcast(int myID) throws UninitialisedMembershipsException, SocketException {
 
@@ -93,13 +93,13 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     }
 
     private void addAcknowledgement(BroadcastMessage bm, int senderID) {
-        Pair uniqueMessageID = bm.getUniqueIdentifier();
+        UniqueMessageID uniqueMessageID = bm.getUniqueIdentifier();
         acks.putIfAbsent(uniqueMessageID, new HashSet<>());
         acks.get(uniqueMessageID).add(senderID);
     }
 
     private void echoMessage(BroadcastMessage bm) {
-        Pair uniqueMessageID = bm.getUniqueIdentifier();
+        UniqueMessageID uniqueMessageID = bm.getUniqueIdentifier();
         if(forwardedMessages.add(uniqueMessageID)) {
             bestEffortBroadcast.broadcast(bm);
         }
