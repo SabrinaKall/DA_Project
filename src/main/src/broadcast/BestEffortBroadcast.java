@@ -36,9 +36,9 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
     }
 
     @Override
-    public void deliverPL(Message msg, int senderID) {
+    public void deliverFromPerfectLink(Message msg, int senderID) {
         if(hasObserver()) {
-            observer.deliverBEB(msg, senderID);
+            observer.deliverFromBestEffortBroadcast(msg, senderID);
         }
     }
 

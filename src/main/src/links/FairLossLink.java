@@ -86,7 +86,7 @@ public class FairLossLink implements Link, Runnable {
                  *  and we avoid having to deal with concurrent 'deliver' calls on the observers
                  *  (since they are called sequentially), making the code simpler
                  **/
-                this.obsFLL.deliverFLL(p.getMessage(), p.getSenderID());
+                this.obsFLL.deliverFromFairLossLink(p.getMessage(), p.getSenderID());
             }
         }
     }

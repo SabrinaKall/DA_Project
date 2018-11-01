@@ -50,7 +50,7 @@ public class FIFOBroadcastTest {
         private Map<Integer, List<BroadcastMessage>> messages = new HashMap<>();
 
         @Override
-        public void deliverFIFOB(Message msg, int senderID) {
+        public void deliverFromFIFOBroadcast(Message msg, int senderID) {
             if(!messages.containsKey(senderID)) {
                 messages.put(senderID, new ArrayList<>());
             }

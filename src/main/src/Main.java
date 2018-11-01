@@ -26,7 +26,7 @@ public class Main{
         }
 
         @Override
-        public void deliverFIFOB(Message msg, int senderID) {}
+        public void deliverFromFIFOBroadcast(Message msg, int senderID) {}
 
     }
 

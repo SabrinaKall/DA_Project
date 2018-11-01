@@ -59,7 +59,7 @@ public class FIFOBroadcast implements UniformBroadcastObserver {
     }
 
     @Override
-    public synchronized void deliverURB(Message msg, int senderID) {
+    public synchronized void deliverFromUniformReliableBroadcast(Message msg, int senderID) {
         BroadcastMessage messageBM = (BroadcastMessage) msg;
         if (messageBM.getMessageSequenceNumber() <= getHighestDelivered(senderID)) {
             return;
@@ -89,7 +89,7 @@ public class FIFOBroadcast implements UniformBroadcastObserver {
         if(hasObserver()) {
             pendingMessages.remove(messageBM.getUniqueIdentifier());
             logger.logDelivery(messageBM.getOriginalSenderID(), messageSeqNumber);
-            observer.deliverFIFOB(messageBM.getMessage(), messageBM.getOriginalSenderID());
+            observer.deliverFromFIFOBroadcast(messageBM.getMessage(), messageBM.getOriginalSenderID());
         }
     }
 

@@ -59,7 +59,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     }
 
     @Override
-    public synchronized void deliverBEB(Message msg, int senderID) {
+    public synchronized void deliverFromBestEffortBroadcast(Message msg, int senderID) {
         BroadcastMessage bm = (BroadcastMessage) msg;
 
         if (hasDelivered(bm)) {  //protects 'acks' and 'forwardedMessages' garbage collection
@@ -85,7 +85,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
 
     private void deliver(BroadcastMessage bm) {
         if(hasObserver()) {
-            observer.deliverURB(bm.getMessage(), bm.getOriginalSenderID());
+            observer.deliverFromUniformReliableBroadcast(bm.getMessage(), bm.getOriginalSenderID());
         }
         addDelivered(bm);
         forwardedMessages.remove(bm.getUniqueIdentifier());

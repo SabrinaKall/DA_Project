@@ -34,7 +34,7 @@ class PerfectLinksTest {
         private Map<Integer, List<Message>> messages = new HashMap<>();
 
         @Override
-        public void deliverPL(Message msg, int senderID) {
+        public void deliverFromPerfectLink(Message msg, int senderID) {
             if(!messages.containsKey(senderID)) {
                 messages.put(senderID, new ArrayList<>());
             }

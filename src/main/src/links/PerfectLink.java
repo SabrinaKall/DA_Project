@@ -92,7 +92,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     }
 
     @Override
-    public void deliverFLL(Message msg, int senderID)  {
+    public void deliverFromFairLossLink(Message msg, int senderID)  {
         PerfectLinkMessage messagePL = (PerfectLinkMessage) msg;
 
         if (messagePL.isAck()) {
@@ -104,7 +104,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         acknowledge(messagePL, senderID);
 
         if (hasObserver() && alreadyDeliveredPackets.get(senderID).add(messagePL.getMessageSequenceNumber())) {
-            perfectLinkObserver.deliverPL(messagePL.getMessage(), senderID);
+            perfectLinkObserver.deliverFromPerfectLink(messagePL.getMessage(), senderID);
         }
 
     }

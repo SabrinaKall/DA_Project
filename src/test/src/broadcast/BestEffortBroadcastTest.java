@@ -40,7 +40,7 @@ class BestEffortBroadcastTest {
         private Map<Integer, List<Message>> messages = new HashMap<>();
 
         @Override
-        public void deliverBEB(Message msg, int senderID) {
+        public void deliverFromBestEffortBroadcast(Message msg, int senderID) {
             if(!messages.containsKey(senderID)) {
                 messages.put(senderID, new ArrayList<>());
             }
