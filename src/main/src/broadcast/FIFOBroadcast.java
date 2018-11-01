@@ -1,6 +1,6 @@
 package src.broadcast;
 
-import src.data.Address;
+import src.data.Memberships;
 import src.data.Pair;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
@@ -8,7 +8,6 @@ import src.exception.BadIPException;
 import src.exception.LogFileInitiationException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
-import src.data.Memberships;
 import src.logging.Logger;
 import src.observer.broadcast.FIFOBroadcastObserver;
 import src.observer.broadcast.UniformBroadcastObserver;
@@ -19,37 +18,25 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FIFOBroadcast implements UniformBroadcastObserver {
+
     private UniformBroadcast uniformBroadcast;
     private FIFOBroadcastObserver observer;
     private AtomicInteger seqNumberCounter = new AtomicInteger(0);
     private int myID;
-    private int nbProcesses;
     private Logger logger;
 
     private Map<Integer, Integer> highestDeliveredPerProcess = new HashMap<>();
     private Map<Pair, BroadcastMessage> pendingMessages = new HashMap<>();
 
-    public FIFOBroadcast(int myID) throws SocketException, UninitialisedMembershipsException, UnreadableFileException, BadIPException, LogFileInitiationException {
+
+    public FIFOBroadcast(int myID) throws SocketException, UninitialisedMembershipsException, LogFileInitiationException {
         this.myID = myID;
         this.uniformBroadcast = new UniformBroadcast(myID);
         this.uniformBroadcast.registerObserver(this);
-        this.nbProcesses = Memberships.getInstance().getNbProcesses();
+        int nbProcesses = Memberships.getInstance().getNbProcesses();
         this.logger = new Logger(myID);
 
-        for (int num=1; num<=this.nbProcesses; num++) {
-            highestDeliveredPerProcess.put(num, 0);
-        }
-    }
-
-    public FIFOBroadcast(String myIP, int port) throws SocketException, UninitialisedMembershipsException, UnreadableFileException, BadIPException, LogFileInitiationException {
-        this.uniformBroadcast = new UniformBroadcast(myIP, port);
-        this.uniformBroadcast.registerObserver(this);
-
-        this.myID = Memberships.getInstance().getProcessId(new Address(myIP, port));
-        this.nbProcesses = Memberships.getInstance().getNbProcesses();
-        this.logger = new Logger(myID);
-
-        for (int num=1; num<=this.nbProcesses; num++) {
+        for (int num = 1; num<= nbProcesses; num++) {
             highestDeliveredPerProcess.put(num, 0);
         }
     }
@@ -58,7 +45,7 @@ public class FIFOBroadcast implements UniformBroadcastObserver {
         this.observer = observer;
     }
 
-    public boolean hasObserver() {
+    private boolean hasObserver() {
         return this.observer != null;
     }
 

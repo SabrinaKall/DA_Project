@@ -72,11 +72,11 @@ public class FairLossLink implements Link, Runnable {
                 if (socket.isClosed()) {
                     return;
                 } else {
-                    System.err.println("FairLossLink::run: error when reading from socket. Ignoring...");
+                    System.err.println("Note: FairLossLink::run: error when reading from socket. Ignoring...");
                     continue;
                 }
             } catch (ClassNotFoundException e) {
-                System.err.println("FairLossLink::run: error converting received packet to local class. Ignoring...");
+                System.err.println("Note: FairLossLink::run error converting received packet to local class. Ignoring...");
                 continue;
             }
 

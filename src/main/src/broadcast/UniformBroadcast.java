@@ -1,14 +1,12 @@
 package src.broadcast;
 
 import src.data.Address;
+import src.data.Memberships;
 import src.data.Pair;
 import src.data.ReceivedMessageHistory;
 import src.data.message.BroadcastMessage;
 import src.data.message.Message;
-import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
-import src.exception.UnreadableFileException;
-import src.data.Memberships;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 import src.observer.broadcast.UniformBroadcastObserver;
 
@@ -31,7 +29,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     private Set<Pair> forwardedMessages = new HashSet<>();
     private Map<Pair, Set<Integer>> acks = new HashMap<>();
 
-    public UniformBroadcast(int myID) throws UninitialisedMembershipsException, SocketException {
+    UniformBroadcast(int myID) throws UninitialisedMembershipsException, SocketException {
 
         this.myID = myID;
         Address myAddress = Memberships.getInstance().getAddress(myID);
@@ -46,25 +44,11 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
         this.bestEffortBroadcast.registerObserver(this);
     }
 
-    //Note: IP has to be looked up by user, depending on what is in memberships file
-    public UniformBroadcast(String myIP, int port) throws SocketException,
-            BadIPException, UnreadableFileException, UninitialisedMembershipsException {
-        this.myID = Memberships.getInstance().getProcessId(new Address(myIP, port));
-        this.nbProcesses = Memberships.getInstance().getNbProcesses();
-
-        for (int num=1; num<=this.nbProcesses; num++) {
-            deliveredMessagesPerProcess.put(num, new ReceivedMessageHistory());
-        }
-
-        this.bestEffortBroadcast = new BestEffortBroadcast(port);
-        this.bestEffortBroadcast.registerObserver(this);
-    }
-
     public void registerObserver(UniformBroadcastObserver observer) {
         this.observer = observer;
     }
 
-    public boolean hasObserver() {
+    private boolean hasObserver() {
         return this.observer != null;
     }
 

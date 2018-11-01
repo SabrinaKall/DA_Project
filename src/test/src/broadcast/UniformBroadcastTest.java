@@ -20,10 +20,8 @@ import java.util.List;
 
 class UniformBroadcastTest {
 
-
-    private static final int SENDER_PORT = 11001;
     private static final int SENDER_ID = 1;
-    private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
+    private static final int[] RECEIVER_IDS = {2, 3, 4, 5};
 
     private static final String MSG_TEXT = "Hello World";
     private static final Message SIMPLE_MSG = new SimpleMessage(MSG_TEXT);
@@ -67,23 +65,19 @@ class UniformBroadcastTest {
 
         while (sender == null) {
             try {
-                sender = new UniformBroadcast(testIP, SENDER_PORT);
+                sender = new UniformBroadcast(SENDER_ID);
             } catch (SocketException ignored) {
-            } catch (BadIPException | UnreadableFileException e) {
-                Assertions.fail(e.getMessage());
             } catch (UninitialisedMembershipsException e) {
                 e.printStackTrace();
             }
         }
 
-        for(int port : RECEIVER_PORTS) {
+        for(int ID : RECEIVER_IDS) {
             UniformBroadcast rec = null;
             while (rec == null) {
                 try {
-                    rec = new UniformBroadcast(testIP, port);
+                    rec = new UniformBroadcast(ID);
                 } catch (SocketException ignored) {
-                } catch (BadIPException | UnreadableFileException e) {
-                    Assertions.fail(e.getMessage());
                 } catch (UninitialisedMembershipsException e) {
                     e.printStackTrace();
                 }

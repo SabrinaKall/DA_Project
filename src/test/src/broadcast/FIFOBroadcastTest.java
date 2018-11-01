@@ -22,9 +22,8 @@ import java.util.Map;
 
 public class FIFOBroadcastTest {
 
-    private static final int SENDER_PORT = 11001;
     private static final int SENDER_ID = 1;
-    private static final int[] RECEIVER_PORTS = {11002, 11003, 11004, 11005};
+    private static final int[] RECEIVER_IDS = {2, 3, 4, 5};
 
     private static final String MSG_TEXT_1 = "Hello World 1";
     private static final String MSG_TEXT_2 = "Hello World 2";
@@ -84,29 +83,21 @@ public class FIFOBroadcastTest {
         sender = null;
         receivers = new ArrayList<>();
 
-        String testIP = "127.0.0.1";
-
-        while(sender == null) {
-            try {
-                sender = new FIFOBroadcast(testIP, SENDER_PORT);
-            } catch (SocketException ignored) {
-            } catch (BadIPException | UnreadableFileException e) {
-                Assertions.fail(e.getMessage());
-            } catch (UninitialisedMembershipsException e) {
-                e.printStackTrace();
-            } catch (LogFileInitiationException e) {
-                e.printStackTrace();
-            }
+        while(sender == null) try {
+            sender = new FIFOBroadcast(SENDER_ID);
+        } catch (SocketException ignored) {
+        } catch (UninitialisedMembershipsException e) {
+            e.printStackTrace();
+        } catch (LogFileInitiationException e) {
+            e.printStackTrace();
         }
 
-        for(int port : RECEIVER_PORTS) {
+        for(int receiverID : RECEIVER_IDS) {
             FIFOBroadcast rec = null;
             while (rec == null) {
                 try {
-                    rec = new FIFOBroadcast(testIP, port);
+                    rec = new FIFOBroadcast(receiverID);
                 } catch (SocketException ignored) {
-                } catch (BadIPException | UnreadableFileException e) {
-                    Assertions.fail(e.getMessage());
                 } catch (UninitialisedMembershipsException e) {
                     e.printStackTrace();
                 } catch (LogFileInitiationException e) {

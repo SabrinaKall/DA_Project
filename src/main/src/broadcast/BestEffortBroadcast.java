@@ -15,7 +15,7 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
     private BestEffortBroadcastObserver observer;
     private int nbProcesses;
 
-    public BestEffortBroadcast(int port) throws SocketException, UninitialisedMembershipsException {
+    BestEffortBroadcast(int port) throws SocketException, UninitialisedMembershipsException {
         this.link = new PerfectLink(port);
         this.link.registerObserver(this);
         nbProcesses = Memberships.getInstance().getNbProcesses();
@@ -25,7 +25,7 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
         this.observer = observer;
     }
 
-    public boolean hasObserver() {
+    private boolean hasObserver() {
         return this.observer != null;
     }
 
