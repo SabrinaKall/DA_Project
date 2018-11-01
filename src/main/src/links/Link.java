@@ -8,5 +8,5 @@ import java.io.IOException;
 
 public interface Link {
 
-    void send(Message message, int destID) throws IOException, BadIPException, UnreadableFileException;
+    void send(int destID, Message message) throws IOException, BadIPException, UnreadableFileException;
 }

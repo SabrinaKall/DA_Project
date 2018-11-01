@@ -99,8 +99,8 @@ class FairLossLinksTest {
                 }
             }
 
-            sender.send(SIMPLE_MSG_1, DESTINATION_ID);
-            sender.send(SIMPLE_MSG_2, DESTINATION_ID);
+            sender.send(DESTINATION_ID, SIMPLE_MSG_1);
+            sender.send(DESTINATION_ID, SIMPLE_MSG_2);
 
 
             FairLossLinkMessage received1 = receiver.receive();

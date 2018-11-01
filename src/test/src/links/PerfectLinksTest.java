@@ -82,8 +82,8 @@ class PerfectLinksTest {
             TestObserver testObserver = new TestObserver();
             receiver.registerObserver(testObserver);
 
-            sender.send(SIMPLE_MSG_1, DESTINATION_ID);
-            sender.send(SIMPLE_MSG_2, DESTINATION_ID);
+            sender.send(DESTINATION_ID, SIMPLE_MSG_1);
+            sender.send(DESTINATION_ID, SIMPLE_MSG_2);
 
             //Wait for delivery
             Thread.sleep(1000);

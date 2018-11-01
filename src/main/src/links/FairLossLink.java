@@ -17,7 +17,7 @@ public class FairLossLink implements Link, Runnable {
 
     private Memberships memberInfo;
     private DatagramSocket socket;
-    private FairLossLinkObserver obsFLL = null;
+    private FairLossLinkObserver fairLossLinkObserver = null;
 
     public FairLossLink(int port) throws SocketException, UninitialisedMembershipsException {
         this.socket = new DatagramSocket(port);
@@ -25,17 +25,15 @@ public class FairLossLink implements Link, Runnable {
     }
 
     public void registerObserver(FairLossLinkObserver obsFLL) {
-        this.obsFLL = obsFLL;
+        this.fairLossLinkObserver = obsFLL;
     }
 
     public boolean hasObserver() {
-        boolean ret = (this.obsFLL == null);
-
-        return !ret;
+        return this.fairLossLinkObserver != null;
     }
 
     @Override
-    public void send(Message message, int destID) throws IOException {
+    public void send(int destID, Message message) throws IOException {
 
         byte[] messageArray = message.convertToBytes();
         Address destAddress = this.memberInfo.getAddress(destID);
@@ -76,7 +74,7 @@ public class FairLossLink implements Link, Runnable {
                     continue;
                 }
             } catch (ClassNotFoundException e) {
-                System.err.println("Note: FairLossLink::run error converting received packet to local class. Ignoring...");
+                System.err.println("Note: FairLossLink::run: error converting received packet to local class. Ignoring...");
                 continue;
             }
 
@@ -86,7 +84,7 @@ public class FairLossLink implements Link, Runnable {
                  *  and we avoid having to deal with concurrent 'deliver' calls on the observers
                  *  (since they are called sequentially), making the code simpler
                  **/
-                this.obsFLL.deliverFromFairLossLink(p.getMessage(), p.getSenderID());
+                this.fairLossLinkObserver.deliverFromFairLossLink(p.getMessage(), p.getSenderID());
             }
         }
     }

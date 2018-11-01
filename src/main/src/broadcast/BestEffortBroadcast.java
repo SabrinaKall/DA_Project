@@ -31,7 +31,7 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
 
     public void broadcast(Message message) {
         for(int id = 1; id <= nbProcesses; ++id) {
-            link.send(message, id);
+            link.send(id, message);
         }
     }
 
