@@ -3,7 +3,7 @@ package src.broadcast;
 import src.data.Address;
 import src.data.Memberships;
 import src.data.Pair;
-import src.data.ReceivedMessageHistory;
+import src.data.ReceptionTracker;
 import src.data.message.broadcast.BroadcastMessage;
 import src.data.message.Message;
 import src.exception.UninitialisedMembershipsException;
@@ -25,7 +25,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     private int myID;
     private int nbProcesses;
 
-    private Map<Integer, ReceivedMessageHistory> deliveredMessagesPerProcess = new HashMap<>();
+    private Map<Integer, ReceptionTracker> deliveredMessagesPerProcess = new HashMap<>();
     private Set<Pair> forwardedMessages = new HashSet<>();
     private Map<Pair, Set<Integer>> acks = new HashMap<>();
 
@@ -37,7 +37,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
         this.nbProcesses = Memberships.getInstance().getNbProcesses();
 
         for (int num=1; num<=this.nbProcesses; num++) {
-            deliveredMessagesPerProcess.put(num, new ReceivedMessageHistory());
+            deliveredMessagesPerProcess.put(num, new ReceptionTracker());
         }
 
         this.bestEffortBroadcast = new BestEffortBroadcast(myAddress.getPort());
@@ -76,11 +76,11 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     }
 
     private boolean hasDelivered(BroadcastMessage bm) {
-        return deliveredMessagesPerProcess.get(bm.getOriginalSenderID()).contains(bm.getMessageSequenceNumber());
+        return deliveredMessagesPerProcess.get(bm.getOriginalSenderID()).alreadyReceived(bm.getMessageSequenceNumber());
     }
 
     private void addDelivered(BroadcastMessage bm) {
-        deliveredMessagesPerProcess.get(bm.getOriginalSenderID()).add(bm.getMessageSequenceNumber());
+        deliveredMessagesPerProcess.get(bm.getOriginalSenderID()).addReceived(bm.getMessageSequenceNumber());
     }
 
     private void deliver(BroadcastMessage bm) {
