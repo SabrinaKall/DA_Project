@@ -9,6 +9,10 @@ public class SimpleMessage extends Message implements Serializable {
 
     private String text;
 
+    public SimpleMessage() {
+        this.text = null;
+    }
+
     public SimpleMessage(String text) {
         this.text = text;
     }

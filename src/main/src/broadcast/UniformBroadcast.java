@@ -3,7 +3,7 @@ package src.broadcast;
 import src.data.Address;
 import src.data.Memberships;
 import src.data.UniqueMessageID;
-import src.data.ReceptionTracker;
+import src.data.MessageTracker;
 import src.data.message.broadcast.BroadcastMessage;
 import src.data.message.Message;
 import src.exception.UninitialisedMembershipsException;
@@ -25,7 +25,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     private int myID;
     private int nbProcesses;
 
-    private Map<Integer, ReceptionTracker> deliveredMessagesPerProcess = new HashMap<>();
+    private Map<Integer, MessageTracker> deliveredMessagesPerProcess = new HashMap<>();
     private Set<UniqueMessageID> forwardedMessages = new HashSet<>();
     private Map<UniqueMessageID, Set<Integer>> acks = new HashMap<>();
 
@@ -37,7 +37,7 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
         this.nbProcesses = Memberships.getInstance().getNbProcesses();
 
         for (int num=1; num<=this.nbProcesses; num++) {
-            deliveredMessagesPerProcess.put(num, new ReceptionTracker());
+            deliveredMessagesPerProcess.put(num, new MessageTracker());
         }
 
         this.bestEffortBroadcast = new BestEffortBroadcast(myAddress.getPort());
@@ -54,8 +54,8 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
 
     public void broadcast(Message message) {
         int seqNum = seqNumberCounter.incrementAndGet();
-        Message mNew = new BroadcastMessage(message, seqNum, myID);
-        bestEffortBroadcast.broadcast(mNew);
+        Message wrappermessage = new BroadcastMessage(message, seqNum, myID);
+        bestEffortBroadcast.broadcast(wrappermessage);
     }
 
     @Override

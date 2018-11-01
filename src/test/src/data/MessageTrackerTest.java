@@ -7,13 +7,13 @@ import org.junit.jupiter.api.Test;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-class ReceptionTrackerTest {
+class MessageTrackerTest {
 
-    private ReceptionTracker testObject;
+    private MessageTracker testObject;
 
     @BeforeEach
     void init() {
-        this.testObject = new ReceptionTracker();
+        this.testObject = new MessageTracker();
 
         SortedSet<Integer> set = new TreeSet<>();
         set.add(4);
@@ -36,10 +36,10 @@ class ReceptionTrackerTest {
     @Test
     void smallerMessageReceived() {
 
-        ReceptionTracker receptionTracker = new ReceptionTracker();
-        receptionTracker.setSmallestReceived(3);
+        MessageTracker messageTracker = new MessageTracker();
+        messageTracker.setSmallestReceived(3);
 
-        Assertions.assertTrue(receptionTracker.alreadyReceived(1));
+        Assertions.assertTrue(messageTracker.alreadyReceived(1));
 
     }
 

@@ -3,12 +3,12 @@ package src.data;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class ReceptionTracker {
+public class MessageTracker {
 
     private int smallestReceived;
     private SortedSet<Integer> biggerReceived;
 
-    public ReceptionTracker() {
+    public MessageTracker() {
         this.smallestReceived = 0;
         this.biggerReceived = new TreeSet<>();
     }

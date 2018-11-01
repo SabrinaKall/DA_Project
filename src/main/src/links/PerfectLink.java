@@ -1,7 +1,7 @@
 package src.links;
 
 import src.data.Memberships;
-import src.data.ReceptionTracker;
+import src.data.MessageTracker;
 import src.data.UniqueMessageID;
 import src.data.message.Message;
 import src.data.message.link.PerfectLinkMessage;
@@ -25,7 +25,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     private PerfectLinkObserver perfectLinkObserver = null;
 
     private Map<UniqueMessageID, PerfectLinkMessage> toSend = new ConcurrentHashMap<>();
-    private Map<Integer, ReceptionTracker> alreadyDelivered = new HashMap<>();
+    private Map<Integer, MessageTracker> alreadyDelivered = new HashMap<>();
     private Map<Integer, AtomicInteger> sentProcessIds = new ConcurrentHashMap<>();
 
 
@@ -34,7 +34,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         int nbProcesses = Memberships.getInstance().getNbProcesses();
 
         for (int processID = 1; processID <= nbProcesses; ++processID) {
-            alreadyDelivered.put(processID, new ReceptionTracker());
+            alreadyDelivered.put(processID, new MessageTracker());
             sentProcessIds.put(processID, new AtomicInteger(0));
         }
 

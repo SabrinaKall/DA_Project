@@ -29,10 +29,13 @@ public class FIFOBroadcast implements UniformBroadcastObserver {
 
     public FIFOBroadcast(int myID) throws SocketException, UninitialisedMembershipsException, LogFileInitiationException {
         this.myID = myID;
+
+        this.logger = new Logger(myID);
+
         this.uniformBroadcast = new UniformBroadcast(myID);
         this.uniformBroadcast.registerObserver(this);
+
         int nbProcesses = Memberships.getInstance().getNbProcesses();
-        this.logger = new Logger(myID);
 
         for (int num = 1; num<= nbProcesses; num++) {
             highestDeliveredPerProcess.put(num, 0);

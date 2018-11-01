@@ -18,12 +18,7 @@ public class Main{
 
     private static class MainObserver implements FIFOBroadcastObserver {
 
-        int localProcessNumber;
-
-        MainObserver(int localProcessNumber) throws UninitialisedMembershipsException {
-            this.localProcessNumber = localProcessNumber;
-
-        }
+        MainObserver() {}
 
         @Override
         public void deliverFromFIFOBroadcast(Message msg, int senderID) {}
@@ -32,10 +27,10 @@ public class Main{
 
     public static void main(String[] args) throws UnreadableFileException, BadIPException {
 
-        int nbArgs = args.length;
-
-        if(nbArgs < 3) {
-            System.out.println("Not enough arguments: prototype should be ./da_proc n memberships m");
+        if(args.length != 3) {
+            System.err.println("Wrong number of arguments: prototype should be ./da_proc n membership m");
+            System.err.print("Process has shut down.");
+            return;
         }
 
         int processNumber = Integer.parseInt(args[0]);
@@ -44,30 +39,26 @@ public class Main{
 
         Memberships.init(membershipsFile);
 
-        FIFOBroadcast broadcast = null;
+        FIFOBroadcast broadcast;
 
         try {
             broadcast = new FIFOBroadcast(processNumber);
-            MainObserver observer = new MainObserver(processNumber);
+            MainObserver observer = new MainObserver();
             broadcast.registerObserver(observer);
 
-        } catch (UninitialisedMembershipsException e) {
-            e.printStackTrace();
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (LogFileInitiationException e) {
-            System.out.println(e.getMessage());
+        } catch (UninitialisedMembershipsException | SocketException | LogFileInitiationException e) {
+            System.err.println("Initialization failed: " + e.getMessage());
+            System.err.print("Process has shut down.");
             return;
         }
 
-        boolean caughtUSR2 = false;
-
-        Signal startSignal = new Signal("USR2");
+        Signal broadcastSignal = new Signal("USR2");
 
         FIFOBroadcast finalBroadcast = broadcast;
-        Signal.handle(startSignal, sig -> {
+
+        Signal.handle(broadcastSignal, sig -> {
             for(int i = 1; i <= nbBroadcasts; ++i) {
-                BroadcastMessage message = new BroadcastMessage(new SimpleMessage(""), i, processNumber);
+                BroadcastMessage message = new BroadcastMessage(new SimpleMessage(), i, processNumber);
                 finalBroadcast.broadcast(message);
             }
         });
