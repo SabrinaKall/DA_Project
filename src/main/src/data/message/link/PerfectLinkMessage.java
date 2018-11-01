@@ -1,4 +1,7 @@
-package src.data.message;
+package src.data.message.link;
+
+import src.data.message.Message;
+import src.data.message.SequenceMessage;
 
 public class PerfectLinkMessage extends SequenceMessage {
     private boolean ack = false;

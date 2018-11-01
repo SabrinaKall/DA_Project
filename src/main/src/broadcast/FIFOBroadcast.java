@@ -2,12 +2,10 @@ package src.broadcast;
 
 import src.data.Memberships;
 import src.data.Pair;
-import src.data.message.BroadcastMessage;
+import src.data.message.broadcast.BroadcastMessage;
 import src.data.message.Message;
-import src.exception.BadIPException;
 import src.exception.LogFileInitiationException;
 import src.exception.UninitialisedMembershipsException;
-import src.exception.UnreadableFileException;
 import src.logging.Logger;
 import src.observer.broadcast.FIFOBroadcastObserver;
 import src.observer.broadcast.UniformBroadcastObserver;

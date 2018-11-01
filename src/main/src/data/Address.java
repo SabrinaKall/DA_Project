@@ -1,7 +1,6 @@
 package src.data;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class Address {
 
@@ -10,15 +9,6 @@ public class Address {
 
     public Address(InetAddress IP, int port) {
         this.IP = IP;
-        this.port = port;
-    }
-
-    public Address(String IP, int port) {
-        try {
-            this.IP = InetAddress.getByName(IP);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
         this.port = port;
     }
 

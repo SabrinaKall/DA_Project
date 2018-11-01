@@ -1,15 +1,15 @@
-package src.data;
+package src.data.message.link;
 
 import src.data.message.Message;
 
-public class Packet {
+public class FairLossLinkMessage extends Message {
 
     private Message message;
-    private int processId;
+    private int senderID;
 
-    public Packet(Message message, int processId) {
+    public FairLossLinkMessage(Message message, int senderID) {
         this.message = message;
-        this.processId = processId;
+        this.senderID = senderID;
     }
 
     public Message getMessage() {
@@ -20,7 +20,7 @@ public class Packet {
         this.message = message;
     }
 
-    public int getProcessId() {
-        return processId;
+    public int getSenderID() {
+        return senderID;
     }
 }

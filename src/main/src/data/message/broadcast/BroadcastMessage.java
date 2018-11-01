@@ -1,6 +1,8 @@
-package src.data.message;
+package src.data.message.broadcast;
 
 import src.data.Pair;
+import src.data.message.Message;
+import src.data.message.SequenceMessage;
 
 
 public class BroadcastMessage extends SequenceMessage {

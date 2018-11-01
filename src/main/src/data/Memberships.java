@@ -69,8 +69,7 @@ public class Memberships {
                     memberships_by_id.put(processId, address);
                     memberships_by_address.put(address, processId);
                 } catch (UnknownHostException e) {
-                    String errorMessage = "Unknown address for process " + processId;
-                    throw new BadIPException(errorMessage);
+                    throw new BadIPException("Unknown address for process " + processId);
                 }
             }
 

@@ -2,7 +2,7 @@ package src.links;
 
 import src.data.Address;
 import src.data.message.Message;
-import src.data.Packet;
+import src.data.message.link.FairLossLinkMessage;
 import src.exception.UninitialisedMembershipsException;
 import src.data.Memberships;
 import src.observer.link.FairLossLinkObserver;
@@ -46,7 +46,7 @@ public class FairLossLink implements Link, Runnable {
     }
 
 
-    public Packet receive() throws IOException, ClassNotFoundException {
+    public FairLossLinkMessage receive() throws IOException, ClassNotFoundException {
         byte[] buffer = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
@@ -58,14 +58,14 @@ public class FairLossLink implements Link, Runnable {
         int senderPort = packet.getPort();
         Address address = new Address(senderIP, senderPort);
         int processId = this.memberInfo.getProcessId(address);
-        return new Packet(message, processId);
+        return new FairLossLinkMessage(message, processId);
     }
 
     @Override
     public void run() {
         while (true) {
 
-            Packet p;
+            FairLossLinkMessage p;
             try {
                 p = this.receive();
             } catch (IOException e) {
@@ -86,7 +86,7 @@ public class FairLossLink implements Link, Runnable {
                  *  and we avoid having to deal with concurrent 'deliver' calls on the observers
                  *  (since they are called sequentially), making the code simpler
                  **/
-                this.obsFLL.deliverFLL(p.getMessage(), p.getProcessId());
+                this.obsFLL.deliverFLL(p.getMessage(), p.getSenderID());
             }
         }
     }

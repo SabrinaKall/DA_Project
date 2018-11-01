@@ -3,7 +3,7 @@ package src.links;
 import src.data.Pair;
 import src.data.ReceivedMessageHistory;
 import src.data.message.Message;
-import src.data.message.PerfectLinkMessage;
+import src.data.message.link.PerfectLinkMessage;
 
 import src.exception.UninitialisedMembershipsException;
 import src.data.Memberships;

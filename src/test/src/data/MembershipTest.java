@@ -7,6 +7,9 @@ import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 class MembershipTest {
 
     @BeforeAll
@@ -32,8 +35,10 @@ class MembershipTest {
     void containsAddress(){
         int id = -1;
         try {
-            id = Memberships.getInstance().getProcessId(new Address("127.0.0.1", 11003));
+            id = Memberships.getInstance().getProcessId(new Address(InetAddress.getByName("127.0.0.1"), 11003));
         } catch (UninitialisedMembershipsException e) {
+            e.printStackTrace();
+        } catch (UnknownHostException e) {
             e.printStackTrace();
         }
         Assertions.assertEquals(3, id);

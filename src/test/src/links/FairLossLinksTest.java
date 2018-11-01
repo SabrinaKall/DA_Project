@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import src.data.message.Message;
-import src.data.Packet;
+import src.data.message.link.FairLossLinkMessage;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
 import src.exception.UninitialisedMembershipsException;
@@ -103,12 +103,12 @@ class FairLossLinksTest {
             sender.send(SIMPLE_MSG_2, DESTINATION_ID);
 
 
-            Packet received1 = receiver.receive();
-            Assertions.assertEquals(SENDER_ID, received1.getProcessId());
+            FairLossLinkMessage received1 = receiver.receive();
+            Assertions.assertEquals(SENDER_ID, received1.getSenderID());
             Assertions.assertEquals(SIMPLE_MSG_1, received1.getMessage());
 
-            Packet received2 = receiver.receive();
-            Assertions.assertEquals(SENDER_ID, received2.getProcessId());
+            FairLossLinkMessage received2 = receiver.receive();
+            Assertions.assertEquals(SENDER_ID, received2.getSenderID());
             Assertions.assertEquals(SIMPLE_MSG_2, received2.getMessage());
 
 

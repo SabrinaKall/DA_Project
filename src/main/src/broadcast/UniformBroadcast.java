@@ -4,7 +4,7 @@ import src.data.Address;
 import src.data.Memberships;
 import src.data.Pair;
 import src.data.ReceivedMessageHistory;
-import src.data.message.BroadcastMessage;
+import src.data.message.broadcast.BroadcastMessage;
 import src.data.message.Message;
 import src.exception.UninitialisedMembershipsException;
 import src.observer.broadcast.BestEffortBroadcastObserver;
