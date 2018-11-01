@@ -57,13 +57,17 @@ class BestEffortBroadcastTest {
     }
 
     @BeforeAll
-    static void init() throws BadIPException, UnreadableFileException {
-        Memberships.init("src/test/resources/membership");
+    static void init() {
+        try {
+            Memberships.init("src/test/resources/membership");
+        } catch (UnreadableFileException | BadIPException e) {
+            Assertions.fail(e.getMessage());
+        }
     }
 
 
     @Test
-    void testBroadcastAndReceive() throws BadIPException, UnreadableFileException {
+    void testBroadcastAndReceive() {
 
         BestEffortBroadcast sender = null;
 
@@ -75,7 +79,7 @@ class BestEffortBroadcastTest {
                 sender = new BestEffortBroadcast(SENDER_PORT);
             } catch (SocketException ignored) {
             } catch (UninitialisedMembershipsException e) {
-                e.printStackTrace();
+                Assertions.fail(e.getMessage());
             }
         }
 
@@ -86,7 +90,7 @@ class BestEffortBroadcastTest {
                     rec = new BestEffortBroadcast(port);
                 } catch (SocketException ignored) {
                 } catch (UninitialisedMembershipsException e) {
-                    e.printStackTrace();
+                    Assertions.fail(e.getMessage());
                 }
             }
             receivers.add(rec);
@@ -146,7 +150,7 @@ class BestEffortBroadcastTest {
                 beb.shutdown();
             }
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            Assertions.fail(throwable.getMessage());
         }
 
 

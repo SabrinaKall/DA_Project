@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FIFOBroadcastTest {
+class FIFOBroadcastTest {
 
     private static final int SENDER_ID = 1;
     private static final int[] RECEIVER_IDS = {2, 3, 4, 5};
@@ -71,14 +71,18 @@ public class FIFOBroadcastTest {
     }
 
 
-    FIFOBroadcast sender;
-    List<FIFOBroadcast> receivers;
-    List<TestObserver> receiverObservers;
+    private FIFOBroadcast sender;
+    private List<FIFOBroadcast> receivers;
+    private List<TestObserver> receiverObservers;
 
     @BeforeEach
-    void init() throws BadIPException, UnreadableFileException {
+    void init() {
 
-        Memberships.init("src/test/resources/membership");
+        try {
+            Memberships.init("src/test/resources/membership");
+        } catch (UnreadableFileException | BadIPException e) {
+            Assertions.fail(e.getMessage());
+        }
 
         sender = null;
         receivers = new ArrayList<>();
@@ -86,10 +90,8 @@ public class FIFOBroadcastTest {
         while(sender == null) try {
             sender = new FIFOBroadcast(SENDER_ID);
         } catch (SocketException ignored) {
-        } catch (UninitialisedMembershipsException e) {
-            e.printStackTrace();
-        } catch (LogFileInitiationException e) {
-            e.printStackTrace();
+        } catch (UninitialisedMembershipsException | LogFileInitiationException e) {
+            Assertions.fail(e.getMessage());
         }
 
         for(int receiverID : RECEIVER_IDS) {
@@ -98,10 +100,8 @@ public class FIFOBroadcastTest {
                 try {
                     rec = new FIFOBroadcast(receiverID);
                 } catch (SocketException ignored) {
-                } catch (UninitialisedMembershipsException e) {
-                    e.printStackTrace();
-                } catch (LogFileInitiationException e) {
-                    e.printStackTrace();
+                } catch (UninitialisedMembershipsException | LogFileInitiationException e) {
+                    Assertions.fail(e.getMessage());
                 }
             }
             receivers.add(rec);
@@ -118,14 +118,14 @@ public class FIFOBroadcastTest {
     }
 
     @AfterEach
-    public void breakDown() {
+    void breakDown() {
         try {
             sender.shutdown();
             for(FIFOBroadcast fifoBroadcast : receivers) {
                 fifoBroadcast.shutdown();
             }
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            Assertions.fail(throwable.getMessage());
         }
     }
 
@@ -264,9 +264,7 @@ public class FIFOBroadcastTest {
         }
 
         if(waited >= maxTime && !allReceived) {
-
             Assertions.fail("Failed to get messages in under "+maxTime/1000+" seconds: only got " + min + "/" + nbMessagesAwaited);
-
         }
     }
 

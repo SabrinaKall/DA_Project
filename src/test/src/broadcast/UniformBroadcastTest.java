@@ -52,23 +52,24 @@ class UniformBroadcastTest {
 
 
     @Test
-    void testBroadcastAndReceive() throws BadIPException, UnreadableFileException {
+    void testBroadcastAndReceive() {
 
-        Memberships.init("src/test/resources/membership");
+        try {
+            Memberships.init("src/test/resources/membership");
+        } catch (UnreadableFileException | BadIPException e) {
+            Assertions.fail(e.getMessage());
+        }
 
         UniformBroadcast sender = null;
 
         List<UniformBroadcast> receivers = new ArrayList<>();
-
-        String testIP = "127.0.0.1";
-
 
         while (sender == null) {
             try {
                 sender = new UniformBroadcast(SENDER_ID);
             } catch (SocketException ignored) {
             } catch (UninitialisedMembershipsException e) {
-                e.printStackTrace();
+                Assertions.fail(e.getMessage());
             }
         }
 
@@ -79,7 +80,7 @@ class UniformBroadcastTest {
                     rec = new UniformBroadcast(ID);
                 } catch (SocketException ignored) {
                 } catch (UninitialisedMembershipsException e) {
-                    e.printStackTrace();
+                    Assertions.fail(e.getMessage());
                 }
 
             }
@@ -120,7 +121,7 @@ class UniformBroadcastTest {
                 urb.shutdown();
             }
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            Assertions.fail(throwable.getMessage());
         }
     }
 
@@ -146,7 +147,6 @@ class UniformBroadcastTest {
         }
 
         if(waited >= maxTime && !allReceived) {
-
             Assertions.fail("Failed to get messages in under "+maxTime/1000+" seconds");
 
         }

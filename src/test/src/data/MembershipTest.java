@@ -13,8 +13,12 @@ import java.net.UnknownHostException;
 class MembershipTest {
 
     @BeforeAll
-    static void init() throws BadIPException, UnreadableFileException {
-        Memberships.init("src/test/resources/membership");
+    static void init() {
+        try {
+            Memberships.init("src/test/resources/membership");
+        } catch (UnreadableFileException | BadIPException e) {
+            Assertions.fail(e.getMessage());
+        }
     }
 
     @Test
@@ -23,7 +27,7 @@ class MembershipTest {
         try {
             address1 = Memberships.getInstance().getAddress(1);
         } catch (UninitialisedMembershipsException e) {
-            e.printStackTrace();
+            Assertions.fail(e.getMessage());
         }
         Assertions.assertNotNull(address1);
         Assertions.assertEquals("/127.0.0.1", address1.getIP().toString());
@@ -36,10 +40,8 @@ class MembershipTest {
         int id = -1;
         try {
             id = Memberships.getInstance().getProcessId(new Address(InetAddress.getByName("127.0.0.1"), 11003));
-        } catch (UninitialisedMembershipsException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
+        } catch (UninitialisedMembershipsException | UnknownHostException e) {
+            Assertions.fail(e.getMessage());
         }
         Assertions.assertEquals(3, id);
 
@@ -50,7 +52,7 @@ class MembershipTest {
         try {
             Assertions.assertEquals(5, Memberships.getInstance().getNbProcesses());
         } catch (UninitialisedMembershipsException e) {
-            e.printStackTrace();
+            Assertions.fail(e.getMessage());
         }
     }
 }

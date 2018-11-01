@@ -52,8 +52,12 @@ class PerfectLinksTest {
     }
 
     @BeforeAll
-    static void init() throws BadIPException, UnreadableFileException {
-        Memberships.init("src/test/resources/membership");
+    static void init() {
+        try {
+            Memberships.init("src/test/resources/membership");
+        } catch (UnreadableFileException | BadIPException e) {
+            Assertions.fail(e.getMessage());
+        }
     }
 
 
@@ -66,7 +70,7 @@ class PerfectLinksTest {
                     sender = new PerfectLink(SENDER_PORT);
                 } catch (SocketException ignored) {
                 } catch (UninitialisedMembershipsException e) {
-                    e.printStackTrace();
+                    Assertions.fail(e.getMessage());
                 }
             }
             PerfectLink receiver = null;
@@ -75,7 +79,7 @@ class PerfectLinksTest {
                     receiver = new PerfectLink(DESTINATION_PORT);
                 } catch (SocketException ignored) {
                 } catch (UninitialisedMembershipsException e) {
-                    e.printStackTrace();
+                    Assertions.fail(e.getMessage());
                 }
             }
 
@@ -107,8 +111,7 @@ class PerfectLinksTest {
             receiver.shutdown();
 
         } catch (InterruptedException e) {
-            Assertions.fail("InterruptedException thrown: " + e.getMessage());
-            e.printStackTrace();
+            Assertions.fail(e.getMessage());
         }
     }
 }
