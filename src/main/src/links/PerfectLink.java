@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -58,18 +59,23 @@ public class PerfectLink implements Link, FairLossLinkObserver {
 
     private Thread createSendingThread() {
         return new Thread(() -> {
+
             while (true) {
-                toSend.forEach((uniqueID, message) -> {
-                    int destId = uniqueID.getProcessID();
+                Set<Map.Entry<UniqueMessageID, PerfectLinkMessage>> KVSet = toSend.entrySet();
+                for (Map.Entry<UniqueMessageID, PerfectLinkMessage> entry : KVSet) {
+
+                    int destID = entry.getKey().getProcessID();
+                    PerfectLinkMessage plMsg = entry.getValue();
+
                     try {
-                        if (message.isAck()) {
-                            toSend.remove(uniqueID);
+                        if (plMsg.isAck()) {
+                            toSend.remove(entry.getKey());
                         }
-                        fairLossLink.send(destId, message);
+                        fairLossLink.send(destID, plMsg);
                     } catch (IOException e) {
-                        System.err.println("Note: problem sending message " + message.toString() + " to " + destId);
+                        System.err.println("Note: problem sending message " + plMsg.toString() + " to " + destID);
                     }
-                });
+                }
 
                 try {
                     Thread.sleep(10);
