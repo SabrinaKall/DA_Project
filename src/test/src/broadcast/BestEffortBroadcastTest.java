@@ -122,7 +122,7 @@ class BestEffortBroadcastTest {
 
             List<Message> messages = obs.getMessagesDelivered(SENDER_ID);
 
-            Assertions.assertEquals(2, messages.size(), "Process" + obs);
+            Assertions.assertEquals(2, messages.size(), "Process " + obs);
 
             SequenceMessage m1 = (SequenceMessage) messages.get(0);
             SequenceMessage m2 = (SequenceMessage) messages.get(1);

@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Logger {
 
-    private static final String PARENT_DIRECTORY = "./output/";
+    private static final String PARENT_DIRECTORY = "./";
 
     private String filepath;
 
@@ -27,7 +27,9 @@ public class Logger {
 
 
     private void log(String message) {
-        tempLogs.add(message);
+        synchronized (tempLogs) {
+            tempLogs.add(message);
+        }
     }
 
     public void logBroadcast(int seqNr) {
@@ -83,17 +85,19 @@ public class Logger {
 
     //Before shutdown, write all saved logs to file
     private void writeToFile() {
-        List<String> written = new ArrayList<>();
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(filepath, true))) {
-            for(String message: tempLogs) {
-                writer.write(messageWithEndline(message));
-                written.add(message);
+        synchronized (tempLogs) {
+            List<String> written = new ArrayList<>();
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filepath, true))) {
+                for (String message : tempLogs) {
+                    writer.write(messageWithEndline(message));
+                    written.add(message);
+                }
+            } catch (IOException e) {
+                System.out.println("Unable to write to file " + filepath + ": " + e.getMessage());
+                tempLogs.removeAll(written);
             }
-        } catch (IOException e) {
-            System.out.println("Unable to write to file " + filepath + ": " + e.getMessage());
             tempLogs.removeAll(written);
         }
-        tempLogs.removeAll(written);
     }
 
 
