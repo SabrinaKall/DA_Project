@@ -3,6 +3,7 @@ package src.broadcast;
 import src.data.DependantMemberships;
 import src.data.UniqueMessageID;
 import src.data.message.Message;
+import src.data.message.SimpleMessage;
 import src.data.message.broadcast.VectorBroadcastMessage;
 import src.exception.LogFileInitiationException;
 import src.exception.UninitialisedMembershipsException;
@@ -71,7 +72,6 @@ public class LocalizedCausalBroadcast implements UniformBroadcastObserver {
     @Override
     public void deliverFromUniformReliableBroadcast(Message msg, int senderID) {
 
-        System.out.println("I "+ myID+ ", got msg from  " + senderID);
         VectorBroadcastMessage messageVC = (VectorBroadcastMessage) msg;
 
         pendingMessages.put(messageVC.getUniqueIdentifier(), messageVC);
@@ -87,8 +87,6 @@ public class LocalizedCausalBroadcast implements UniformBroadcastObserver {
                     for(int process: theirVectorClock.keySet()) {
 
                         if(vectorClocks.get(process) < theirVectorClock.get(process)) {
-                            System.out.println(vectorClocks);
-                            System.out.println(theirVectorClock);
                          noneBigger = false;
                          break;
                         }
@@ -97,7 +95,9 @@ public class LocalizedCausalBroadcast implements UniformBroadcastObserver {
                     if(noneBigger) {
                         pendingMessages.remove(id);
                         vectorClocks.put(id.getProcessID(), vectorClocks.get(id.getProcessID()) + 1);
-                        uniformBroadcast.deliverFromBestEffortBroadcast(vcMsg.getMessage(), id.getProcessID());
+                        if(hasObserver()) {
+                            observer.deliverFromLocalizedBroadcast(vcMsg.getMessage(), id.getProcessID());
+                        }
                     }
 
                 }

@@ -73,7 +73,7 @@ public class PerfectLink implements Link, FairLossLinkObserver {
                         }
                         fairLossLink.send(destID, plMsg);
                     } catch (IOException e) {
-                        System.err.println("Note: problem sending message " + plMsg.toString() + " to " + destID);
+                        System.err.println("Note: PerfectLink::createSendingThread: problem sending message to " + destID);
                     }
                 }
 

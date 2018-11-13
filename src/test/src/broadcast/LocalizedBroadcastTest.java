@@ -9,7 +9,6 @@ import src.data.Memberships;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.data.message.broadcast.BroadcastMessage;
-import src.data.message.broadcast.VectorBroadcastMessage;
 import src.exception.BadIPException;
 import src.exception.LogFileInitiationException;
 import src.exception.UninitialisedMembershipsException;
@@ -30,11 +29,6 @@ public class LocalizedBroadcastTest {
     private static final String MSG_TEXT_2 = "Hello World 2";
     private static final String MSG_TEXT_3 = "Hello World 3";
 
-    private static final Map<Integer, Integer> vectorClock1 = createMap();
-    private static final Map<Integer, Integer> vectorClock2 = createMap();
-    private static final Map<Integer, Integer> vectorClock3 = createMap();
-
-
     private static final Message SIMPLE_MSG_1 = new SimpleMessage(MSG_TEXT_1);
     private static final int MSG_SEQ_NUM_1 = 1;
     private static final BroadcastMessage BROADCAST_MESSAGE_1 =
@@ -50,24 +44,15 @@ public class LocalizedBroadcastTest {
     private static final BroadcastMessage BROADCAST_MESSAGE_3 =
             new BroadcastMessage(SIMPLE_MSG_3, MSG_SEQ_NUM_3, SENDER_ID);
 
-    private static Map<Integer, Integer> createMap() {
-        Map<Integer, Integer> vectorClock = new HashMap<>();
-        for(int i = 1; i < 4; ++i) {
-            vectorClock.put(i, 0);
-        }
-        return vectorClock;
-    }
-
-
     private class TestObserver implements LocalizedBroadcastObserver {
 
-        private Map<Integer, List<VectorBroadcastMessage>> messages = new HashMap<>();
+        private Map<Integer, List<BroadcastMessage>> messages = new HashMap<>();
 
         boolean hasDelivered(int sender) {
             return messages.containsKey(sender);
         }
 
-        List<VectorBroadcastMessage> getMessagesDelivered(int sender) {
+        List<BroadcastMessage> getMessagesDelivered(int sender) {
             if(!messages.containsKey(sender)) {
                 return new ArrayList<>();
             }
@@ -79,7 +64,7 @@ public class LocalizedBroadcastTest {
             if(!messages.containsKey(senderID)) {
                 messages.put(senderID, new ArrayList<>());
             }
-            messages.get(senderID).add((VectorBroadcastMessage) msg);
+            messages.get(senderID).add((BroadcastMessage) msg);
         }
     }
 
@@ -159,7 +144,7 @@ public class LocalizedBroadcastTest {
         for(TestObserver obs : receiverObservers) {
             Assertions.assertTrue(obs.hasDelivered(SENDER_ID));
 
-            List<VectorBroadcastMessage> messages =  obs.getMessagesDelivered(SENDER_ID);
+            List<BroadcastMessage> messages =  obs.getMessagesDelivered(SENDER_ID);
             BroadcastMessage m = messages.get(0);
 
             Assertions.assertNotNull(m);
@@ -184,7 +169,7 @@ public class LocalizedBroadcastTest {
         for(TestObserver obs : receiverObservers) {
             Assertions.assertTrue(obs.hasDelivered(SENDER_ID));
 
-            List<VectorBroadcastMessage> messages =  obs.getMessagesDelivered(SENDER_ID);
+            List<BroadcastMessage> messages =  obs.getMessagesDelivered(SENDER_ID);
 
             Assertions.assertEquals(3, messages.size());
 
@@ -224,7 +209,7 @@ public class LocalizedBroadcastTest {
         for(TestObserver obs : receiverObservers) {
             Assertions.assertTrue(obs.hasDelivered(SENDER_ID));
 
-            List<VectorBroadcastMessage> messages =  obs.getMessagesDelivered(SENDER_ID);
+            List<BroadcastMessage> messages =  obs.getMessagesDelivered(SENDER_ID);
 
             Assertions.assertEquals(3, messages.size());
 
