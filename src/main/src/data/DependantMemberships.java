@@ -15,15 +15,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Memberships {
+public class DependantMemberships {
 
     private static boolean isLoaded = false;
-    private static Memberships instance;
+    private static DependantMemberships instance;
     private int nbProcesses;
     private Map<Integer, Address> memberships_by_id;
     private Map<Address, Integer> memberships_by_address;
+    private Map<Integer, List<Integer>> dependencies;
 
-    public synchronized static Memberships getInstance() throws UninitialisedMembershipsException {
+    public synchronized static DependantMemberships getInstance() throws UninitialisedMembershipsException {
         if (!isLoaded) {
             throw new UninitialisedMembershipsException();
         } else {
@@ -32,7 +33,7 @@ public class Memberships {
     }
 
     public static void init(String filename) throws UnreadableFileException, BadIPException {
-        instance = new Memberships(filename);
+        instance = new DependantMemberships(filename);
     }
 
     public int getNbProcesses() {
@@ -47,11 +48,15 @@ public class Memberships {
         return memberships_by_address.get(address);
     }
 
+    public List<Integer> getDependenciesOf(int id){
+        return dependencies.get(id);
+    }
 
-    private Memberships(String filename) throws BadIPException, UnreadableFileException {
+    private DependantMemberships(String filename) throws BadIPException, UnreadableFileException {
 
         memberships_by_id = new HashMap<>();
         memberships_by_address = new HashMap<>();
+        dependencies = new HashMap<>();
 
         try {
             Path fileToRead = Paths.get(filename);
@@ -74,6 +79,22 @@ public class Memberships {
                 } catch (UnknownHostException e) {
                     throw new BadIPException("Unknown address for process " + processId);
                 }
+            }
+
+            //get dependencies
+            for (int i = nbProcesses + 1; i <= 2*nbProcesses; ++i) {
+                String line = allLines.get(i);
+                String words[] = line.split(" ");
+
+                int processId = Integer.parseInt(words[0]);
+
+                List<Integer> dependencyList = new ArrayList<>();
+
+                for(int j = 1; j < words.length; ++j) {
+                    dependencyList.add(Integer.parseInt(words[j]));
+                }
+
+                dependencies.put(processId, dependencyList);
             }
 
         } catch (IOException e) {

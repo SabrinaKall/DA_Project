@@ -1,6 +1,6 @@
 package src.broadcast;
 
-import src.data.Memberships;
+import src.data.DependantMemberships;
 import src.data.UniqueMessageID;
 import src.data.message.Message;
 import src.data.message.broadcast.VectorBroadcastMessage;
@@ -33,14 +33,14 @@ public class LocalizedCausalBroadcast implements UniformBroadcastObserver {
 
     public LocalizedCausalBroadcast(int myID) throws LogFileInitiationException, SocketException, UninitialisedMembershipsException {
         this.myID = myID;
-        this.myInfluencers = Memberships.getInstance().getDependenciesOf(myID);
+        this.myInfluencers = DependantMemberships.getInstance().getDependenciesOf(myID);
 
         this.logger = new Logger(myID);
 
         this.uniformBroadcast = new UniformBroadcast(myID);
         this.uniformBroadcast.registerObserver(this);
 
-        int nbProcesses = Memberships.getInstance().getNbProcesses();
+        int nbProcesses = DependantMemberships.getInstance().getNbProcesses();
 
         for (int processID = 1; processID<= nbProcesses; processID++) {
             vectorClocks.put(processID, 0);
@@ -57,7 +57,8 @@ public class LocalizedCausalBroadcast implements UniformBroadcastObserver {
     }
 
     public void broadcast(Message message) {
-        int seqNum = localSequenceNumber.incrementAndGet();
+
+        int seqNum = localSequenceNumber.getAndIncrement();
         Map<Integer, Integer> vectorCopy = new HashMap<>(vectorClocks);
         vectorCopy.put(myID, seqNum);
 
@@ -69,6 +70,8 @@ public class LocalizedCausalBroadcast implements UniformBroadcastObserver {
 
     @Override
     public void deliverFromUniformReliableBroadcast(Message msg, int senderID) {
+
+        System.out.println("I "+ myID+ ", got msg from  " + senderID);
         VectorBroadcastMessage messageVC = (VectorBroadcastMessage) msg;
 
         pendingMessages.put(messageVC.getUniqueIdentifier(), messageVC);
@@ -84,6 +87,8 @@ public class LocalizedCausalBroadcast implements UniformBroadcastObserver {
                     for(int process: theirVectorClock.keySet()) {
 
                         if(vectorClocks.get(process) < theirVectorClock.get(process)) {
+                            System.out.println(vectorClocks);
+                            System.out.println(theirVectorClock);
                          noneBigger = false;
                          break;
                         }
