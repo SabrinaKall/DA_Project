@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class Memberships {
     private int nbProcesses;
     private Map<Integer, Address> memberships_by_id;
     private Map<Address, Integer> memberships_by_address;
+    private Map<Integer, List<Integer>> dependencies;
 
     public synchronized static Memberships getInstance() throws UninitialisedMembershipsException {
         if (!isLoaded) {
@@ -46,10 +48,15 @@ public class Memberships {
         return memberships_by_address.get(address);
     }
 
+    public List<Integer> getDependenciesOf(int id){
+        return dependencies.get(id);
+    }
+
     private Memberships(String filename) throws BadIPException, UnreadableFileException {
 
         memberships_by_id = new HashMap<>();
         memberships_by_address = new HashMap<>();
+        dependencies = new HashMap<>();
 
         try {
             Path fileToRead = Paths.get(filename);
@@ -57,6 +64,7 @@ public class Memberships {
 
             nbProcesses = Integer.parseInt(allLines.get(0));
 
+            //get addresses
             for (int i = 1; i <= nbProcesses; ++i) {
                 String line = allLines.get(i);
                 String words[] = line.split(" ");
@@ -71,6 +79,22 @@ public class Memberships {
                 } catch (UnknownHostException e) {
                     throw new BadIPException("Unknown address for process " + processId);
                 }
+            }
+
+            //get dependencies
+            for (int i = 1; i <=nbProcesses; ++i) {
+                String line = allLines.get(i);
+                String words[] = line.split(" ");
+
+                int processId = Integer.parseInt(words[0]);
+
+                List<Integer> dependencyList = new ArrayList<>();
+
+                for(int j = 1; j < words.length; ++j) {
+                    dependencyList.add(Integer.parseInt(words[j]));
+                }
+
+                dependencies.put(processId, dependencyList);
             }
 
         } catch (IOException e) {

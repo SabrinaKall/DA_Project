@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Logger {
 
@@ -37,6 +38,10 @@ public class Logger {
     }
 
     public void logDelivery(int sender, int seqNr) {
+        log("d " + sender + " " + seqNr + "\n");
+    }
+
+    public void logDeliveryWithDependencies(int sender, int seqNr, Map<Integer, Integer> dependencies) {
         log("d " + sender + " " + seqNr + "\n");
     }
 
