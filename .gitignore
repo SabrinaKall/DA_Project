@@ -23,9 +23,7 @@
 hs_err_pid*
 
 #intellij
-.idea/*
 .idea/workspace.xml
-DA_Project.iml
 .idea/modules.xml
 .Rhistory
 src/main/resources
