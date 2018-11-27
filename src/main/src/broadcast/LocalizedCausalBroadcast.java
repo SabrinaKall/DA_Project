@@ -1,6 +1,6 @@
 package src.broadcast;
 
-import src.data.DependantMemberships;
+import src.data.Memberships;
 import src.data.UniqueMessageID;
 import src.data.message.Message;
 import src.data.message.broadcast.VectorBroadcastMessage;
@@ -37,13 +37,13 @@ public class LocalizedCausalBroadcast implements UniformBroadcastObserver {
         this.uniformBroadcast = new UniformBroadcast(myID);
         this.uniformBroadcast.registerObserver(this);
 
-        int nbProcesses = DependantMemberships.getInstance().getNbProcesses();
+        int nbProcesses = Memberships.getInstance().getNbProcesses();
 
         for (int processID = 1; processID<= nbProcesses; processID++) {
             delivered.put(processID, 0);
         }
 
-        for (Integer x : DependantMemberships.getInstance().getDependenciesOf(myID)) {
+        for (Integer x : Memberships.getInstance().getDependenciesOf(myID)) {
             partialVectorClock.put(x, 0);
         }
     }

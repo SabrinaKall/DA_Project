@@ -4,7 +4,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import src.data.DependantMemberships;
 import src.data.Memberships;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
@@ -106,10 +105,9 @@ public class LocalizedBroadcastSpecialTest {
 
         try {
 
-            DependantMemberships.init("src/test/resources/membership_causal");
-            Memberships.init("src/test/resources/membership");
+            Memberships.init("src/test/resources/membership", true);
 
-            DependantMemberships.getInstance().getAllDependancies().forEach(
+            Memberships.getInstance().getAllDependancies().forEach(
                 (id, deps) -> {
                     System.out.print(id + " depends on: ");
                     for(int dep: deps) {

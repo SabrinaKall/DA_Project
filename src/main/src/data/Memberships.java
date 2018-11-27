@@ -10,10 +10,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Memberships {
 
@@ -22,6 +19,9 @@ public class Memberships {
     private int nbProcesses;
     private Map<Integer, Address> memberships_by_id;
     private Map<Address, Integer> memberships_by_address;
+
+    private Map<Integer, Set<Integer>> dependencies = new HashMap<>();
+
 
     public synchronized static Memberships getInstance() throws UninitialisedMembershipsException {
         if (!isLoaded) {
@@ -32,7 +32,11 @@ public class Memberships {
     }
 
     public static void init(String filename) throws UnreadableFileException, BadIPException {
-        instance = new Memberships(filename);
+        instance = new Memberships(filename, false);
+    }
+
+    public static void init(String filename, boolean withDeps) throws UnreadableFileException, BadIPException {
+        instance = new Memberships(filename, withDeps);
     }
 
     public int getNbProcesses() {
@@ -47,8 +51,17 @@ public class Memberships {
         return memberships_by_address.get(address);
     }
 
+    public Set<Integer> getDependenciesOf(int id){
+        return dependencies.get(id);
+    }
 
-    private Memberships(String filename) throws BadIPException, UnreadableFileException {
+
+    public Map<Integer, Set<Integer>> getAllDependancies() {
+        return dependencies;
+    }
+
+
+    private Memberships(String filename, boolean hasDependencies) throws BadIPException, UnreadableFileException {
 
         memberships_by_id = new HashMap<>();
         memberships_by_address = new HashMap<>();
@@ -71,8 +84,27 @@ public class Memberships {
                     Address address = new Address(IPAddress, Integer.parseInt(words[2]));
                     memberships_by_id.put(processId, address);
                     memberships_by_address.put(address, processId);
+                    dependencies.put(processId, new HashSet<>());
                 } catch (UnknownHostException e) {
                     throw new BadIPException("Unknown address for process " + processId);
+                }
+            }
+
+            if(hasDependencies) {
+                //get dependencies
+                for (int i = nbProcesses + 1; i <= 2*nbProcesses; ++i) {
+                    String line = allLines.get(i);
+                    String words[] = line.split(" ");
+
+                    int processId = Integer.parseInt(words[0]);
+
+                    Set<Integer> dependencyList = new HashSet<>();
+
+                    for(int j = 1; j < words.length; ++j) {
+                        dependencyList.add(Integer.parseInt(words[j]));
+                    }
+
+                    dependencies.put(processId, dependencyList);
                 }
             }
 

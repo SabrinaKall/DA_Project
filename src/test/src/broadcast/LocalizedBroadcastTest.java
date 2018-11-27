@@ -4,7 +4,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import src.data.DependantMemberships;
 import src.data.Memberships;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
@@ -77,8 +76,7 @@ public class LocalizedBroadcastTest {
     void init() {
 
         try {
-            DependantMemberships.init("src/test/resources/membership");
-            Memberships.init("src/test/resources/membership");
+            Memberships.init("src/test/resources/membership", true);
         } catch (UnreadableFileException | BadIPException e) {
             System.err.print("Here");
             Assertions.fail(e.getMessage());
