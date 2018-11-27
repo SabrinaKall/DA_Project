@@ -46,4 +46,8 @@ public class BestEffortBroadcast implements PerfectLinkObserver {
         link.shutdown();
     }
 
+    //testing
+    public PerfectLink getLink() {
+        return this.link;
+    }
 }
