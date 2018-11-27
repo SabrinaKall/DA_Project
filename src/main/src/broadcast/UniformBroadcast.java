@@ -7,6 +7,7 @@ import src.data.MessageTracker;
 import src.data.message.broadcast.BroadcastMessage;
 import src.data.message.Message;
 import src.exception.UninitialisedMembershipsException;
+import src.links.PerfectLink;
 import src.observer.broadcast.BestEffortBroadcastObserver;
 import src.observer.broadcast.UniformBroadcastObserver;
 
@@ -112,5 +113,10 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
 
     public void shutdown() {
         bestEffortBroadcast.shutdown();
+    }
+
+    //testing
+    public PerfectLink getLink() {
+        return this.bestEffortBroadcast.getLink();
     }
 }

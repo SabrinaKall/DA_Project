@@ -6,6 +6,7 @@ import src.data.message.Message;
 import src.data.message.broadcast.VectorBroadcastMessage;
 import src.exception.LogFileInitiationException;
 import src.exception.UninitialisedMembershipsException;
+import src.links.PerfectLink;
 import src.logging.Logger;
 import src.observer.broadcast.LocalizedBroadcastObserver;
 import src.observer.broadcast.UniformBroadcastObserver;
@@ -111,4 +112,8 @@ public class LocalizedCausalBroadcast implements UniformBroadcastObserver {
 
     public void shutdown() { uniformBroadcast.shutdown(); }
 
+    //testing
+    public PerfectLink getLink() {
+        return this.uniformBroadcast.getLink();
+    }
 }
