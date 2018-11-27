@@ -1,6 +1,7 @@
 package src;
 
 import src.broadcast.FIFOBroadcast;
+import src.data.DependantMemberships;
 import src.data.message.broadcast.BroadcastMessage;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
@@ -38,6 +39,7 @@ public class Main{
         int nbBroadcasts = Integer.parseInt(args[2]);
 
         Memberships.init(membershipsFile);
+        DependantMemberships.init(membershipsFile); //eventually, merge DependantMemberships into Memberships
 
         FIFOBroadcast broadcast;
 

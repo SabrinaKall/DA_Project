@@ -26,6 +26,7 @@ public class SimpleMessage extends Message implements Serializable {
         if (!(o instanceof SimpleMessage)) {
             return false;
         }
+
         SimpleMessage msg = (SimpleMessage) o;
         return (msg.text).equals(text);
     }
@@ -33,5 +34,12 @@ public class SimpleMessage extends Message implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(text);
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleMessage{" +
+                "text='" + text + '\'' +
+                '}';
     }
 }
