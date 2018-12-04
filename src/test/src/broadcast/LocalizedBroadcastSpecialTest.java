@@ -89,7 +89,6 @@ public class LocalizedBroadcastSpecialTest {
                 messages.put(senderID, new ArrayList<>());
             }
             BroadcastMessage bmsg = (BroadcastMessage) msg;
-            System.out.println(myID + " got " + bmsg.getUniqueIdentifier().getSeqNb() + " from " + senderID);
             messages.get(senderID).add(bmsg);
         }
     }
@@ -105,15 +104,13 @@ public class LocalizedBroadcastSpecialTest {
 
         try {
 
-            Memberships.init("src/test/resources/membership", true);
+            Memberships.init("src/test/resources/membership_causal", true);
 
             Memberships.getInstance().getAllDependancies().forEach(
                 (id, deps) -> {
-                    System.out.print(id + " depends on: ");
                     for(int dep: deps) {
                         System.out.print(dep + " ");
                     }
-                    System.out.print("\n");
                 }
             );
 
