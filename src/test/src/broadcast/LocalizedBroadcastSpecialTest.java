@@ -352,6 +352,77 @@ public class LocalizedBroadcastSpecialTest {
 
     }
 
+    @Test
+    void indirectDependencies() {
+        receivers.get(0).getLink().ignore(SENDER_ID_1);
+
+
+        sender_1.broadcast(BROADCAST_MESSAGE_1);
+        sender_1.broadcast(BROADCAST_MESSAGE_2);
+        sender_1.broadcast(BROADCAST_MESSAGE_3);
+
+        sender_2.broadcast(BROADCAST_MESSAGE_4);
+        sender_2.broadcast(BROADCAST_MESSAGE_5);
+        sender_2.broadcast(BROADCAST_MESSAGE_6);
+
+        waitForDelivery(6);
+
+
+        for(TestObserver obs : receiverObservers) {
+            Assertions.assertTrue(obs.hasDelivered(SENDER_ID_1));
+
+            List<BroadcastMessage> messages_1 =  obs.getMessagesDelivered(SENDER_ID_1);
+
+            Assertions.assertEquals(3, messages_1.size());
+
+            BroadcastMessage m1 = messages_1.get(0);
+            BroadcastMessage m2 = messages_1.get(1);
+            BroadcastMessage m3 = messages_1.get(2);
+
+            Assertions.assertNotNull(m1);
+            Assertions.assertEquals(SIMPLE_MSG_1, m1.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_1, m1.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID_1, m1.getOriginalSenderID());
+
+
+            Assertions.assertNotNull(m2);
+            Assertions.assertEquals(SIMPLE_MSG_2, m2.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_2, m2.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID_1, m2.getOriginalSenderID());
+
+
+            Assertions.assertNotNull(m3);
+            Assertions.assertEquals(SIMPLE_MSG_3, m3.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_3, m3.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID_1, m3.getOriginalSenderID());
+
+            List<BroadcastMessage> messages_2 =  obs.getMessagesDelivered(SENDER_ID_2);
+
+            Assertions.assertEquals(3, messages_2.size());
+
+            BroadcastMessage m4 = messages_2.get(0);
+            BroadcastMessage m5 = messages_2.get(1);
+            BroadcastMessage m6 = messages_2.get(2);
+
+            Assertions.assertNotNull(m4);
+            Assertions.assertEquals(SIMPLE_MSG_4, m4.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_4, m4.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID_2, m4.getOriginalSenderID());
+
+
+            Assertions.assertNotNull(m5);
+            Assertions.assertEquals(SIMPLE_MSG_5, m5.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_5, m5.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID_2, m5.getOriginalSenderID());
+
+
+            Assertions.assertNotNull(m6);
+            Assertions.assertEquals(SIMPLE_MSG_6, m6.getMessage());
+            Assertions.assertEquals(MSG_SEQ_NUM_6, m6.getMessageSequenceNumber());
+            Assertions.assertEquals(SENDER_ID_2, m6.getOriginalSenderID());
+        }
+
+    }
 
     private void waitForDelivery(int nbMessagesAwaited) {
         int maxTime = 5000;
