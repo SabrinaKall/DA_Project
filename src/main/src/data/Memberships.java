@@ -1,6 +1,7 @@
 package src.data;
 
 import src.exception.BadIPException;
+import src.exception.BadProcessExeption;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 
@@ -31,11 +32,11 @@ public class Memberships {
         }
     }
 
-    public static void init(String filename) throws UnreadableFileException, BadIPException {
+    public static void init(String filename) throws UnreadableFileException, BadIPException, BadProcessExeption {
         instance = new Memberships(filename, false);
     }
 
-    public static void init(String filename, boolean withDeps) throws UnreadableFileException, BadIPException {
+    public static void init(String filename, boolean withDeps) throws UnreadableFileException, BadIPException, BadProcessExeption {
         instance = new Memberships(filename, withDeps);
     }
 
@@ -61,7 +62,7 @@ public class Memberships {
     }
 
 
-    private Memberships(String filename, boolean hasDependencies) throws BadIPException, UnreadableFileException {
+    private Memberships(String filename, boolean hasDependencies) throws BadIPException, UnreadableFileException, BadProcessExeption {
 
         memberships_by_id = new HashMap<>();
         memberships_by_address = new HashMap<>();
@@ -101,6 +102,12 @@ public class Memberships {
                     Set<Integer> dependencyList = new HashSet<>();
 
                     for(int j = 1; j < words.length; ++j) {
+                        int dependency = Integer.parseInt(words[j]);
+
+                        if(dependency < 0 || dependency > nbProcesses) {
+                            throw new BadProcessExeption("Process " + dependency + " does not exist");
+                        }
+
                         dependencyList.add(Integer.parseInt(words[j]));
                     }
 

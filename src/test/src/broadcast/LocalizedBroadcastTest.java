@@ -8,10 +8,7 @@ import src.data.Memberships;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.data.message.broadcast.BroadcastMessage;
-import src.exception.BadIPException;
-import src.exception.LogFileInitiationException;
-import src.exception.UninitialisedMembershipsException;
-import src.exception.UnreadableFileException;
+import src.exception.*;
 import src.observer.broadcast.LocalizedBroadcastObserver;
 
 import java.net.SocketException;
@@ -77,7 +74,7 @@ public class LocalizedBroadcastTest {
 
         try {
             Memberships.init("src/test/resources/membership", true);
-        } catch (UnreadableFileException | BadIPException e) {
+        } catch (UnreadableFileException | BadIPException | BadProcessExeption e) {
             System.err.print("Here");
             Assertions.fail(e.getMessage());
         }

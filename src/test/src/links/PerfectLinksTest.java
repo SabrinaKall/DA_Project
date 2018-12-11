@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.exception.BadIPException;
+import src.exception.BadProcessExeption;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 import src.data.Memberships;
@@ -55,7 +56,7 @@ class PerfectLinksTest {
     static void init() {
         try {
             Memberships.init("src/test/resources/membership");
-        } catch (UnreadableFileException | BadIPException e) {
+        } catch (UnreadableFileException | BadIPException | BadProcessExeption e) {
             Assertions.fail(e.getMessage());
         }
     }

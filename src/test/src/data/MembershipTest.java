@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import src.exception.BadIPException;
+import src.exception.BadProcessExeption;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
 
@@ -16,7 +17,7 @@ class MembershipTest {
     static void init() {
         try {
             Memberships.init("src/test/resources/membership");
-        } catch (UnreadableFileException | BadIPException e) {
+        } catch (UnreadableFileException | BadIPException | BadProcessExeption e) {
             Assertions.fail(e.getMessage());
         }
     }
