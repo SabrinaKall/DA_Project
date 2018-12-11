@@ -56,11 +56,6 @@ public class Main{
             for(int i = 1; i <= nbBroadcasts; ++i) {
                 BroadcastMessage message = new BroadcastMessage(new SimpleMessage(), i, processNumber);
                 finalBroadcast.broadcast(message);
-                try {
-                    Thread.sleep(101);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
