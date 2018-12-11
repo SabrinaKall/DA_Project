@@ -1,28 +1,27 @@
 package src;
 
-import src.broadcast.FIFOBroadcast;
-import src.data.message.broadcast.BroadcastMessage;
+import src.broadcast.LocalizedCausalBroadcast;
+import src.data.Memberships;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
+import src.data.message.broadcast.BroadcastMessage;
 import src.exception.BadIPException;
 import src.exception.LogFileInitiationException;
 import src.exception.UninitialisedMembershipsException;
 import src.exception.UnreadableFileException;
-import src.data.Memberships;
-import src.observer.broadcast.FIFOBroadcastObserver;
+import src.observer.broadcast.LocalizedBroadcastObserver;
 import sun.misc.Signal;
 
 import java.net.SocketException;
 
 public class Main{
 
-    private static class MainObserver implements FIFOBroadcastObserver {
+    private static class MainObserver implements LocalizedBroadcastObserver {
 
-        MainObserver() {}
+        MainObserver(){}
 
         @Override
-        public void deliverFromFIFOBroadcast(Message msg, int senderID) {}
-
+        public void deliverFromLocalizedBroadcast(Message msg, int senderID) {}
     }
 
     public static void main(String[] args) throws UnreadableFileException, BadIPException {
@@ -39,10 +38,10 @@ public class Main{
 
         Memberships.init(membershipsFile, true);
 
-        FIFOBroadcast broadcast;
+        LocalizedCausalBroadcast broadcast;
 
         try {
-            broadcast = new FIFOBroadcast(processNumber);
+            broadcast = new LocalizedCausalBroadcast(processNumber);
             MainObserver observer = new MainObserver();
             broadcast.registerObserver(observer);
 
@@ -54,7 +53,7 @@ public class Main{
 
         Signal broadcastSignal = new Signal("USR2");
 
-        FIFOBroadcast finalBroadcast = broadcast;
+        LocalizedCausalBroadcast finalBroadcast = broadcast;
 
         Signal.handle(broadcastSignal, sig -> {
             for(int i = 1; i <= nbBroadcasts; ++i) {
