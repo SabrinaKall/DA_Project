@@ -5,10 +5,7 @@ import src.data.Memberships;
 import src.data.message.Message;
 import src.data.message.SimpleMessage;
 import src.data.message.broadcast.BroadcastMessage;
-import src.exception.BadIPException;
-import src.exception.LogFileInitiationException;
-import src.exception.UninitialisedMembershipsException;
-import src.exception.UnreadableFileException;
+import src.exception.*;
 import src.observer.broadcast.LocalizedBroadcastObserver;
 import sun.misc.Signal;
 
@@ -24,7 +21,7 @@ public class Main{
         public void deliverFromLocalizedBroadcast(Message msg, int senderID) {}
     }
 
-    public static void main(String[] args) throws UnreadableFileException, BadIPException {
+    public static void main(String[] args) throws UnreadableFileException, BadIPException, BadProcessExeption {
 
         if(args.length != 3) {
             System.err.println("Wrong number of arguments: prototype should be ./da_proc n membership m");
