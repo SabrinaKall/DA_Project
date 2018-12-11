@@ -111,9 +111,4 @@ public class LocalizedCausalBroadcast implements UniformBroadcastObserver {
     }
 
     public void shutdown() { uniformBroadcast.shutdown(); }
-
-    //testing
-    public PerfectLink getLink() {
-        return this.uniformBroadcast.getLink();
-    }
 }

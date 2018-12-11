@@ -351,9 +351,6 @@ public class LocalizedBroadcastSpecialTest {
 
     @Test
     void indirectDependencies() {
-        receivers.get(0).getLink().ignore(SENDER_ID_1);
-
-
         sender_1.broadcast(BROADCAST_MESSAGE_1);
         sender_1.broadcast(BROADCAST_MESSAGE_2);
         sender_1.broadcast(BROADCAST_MESSAGE_3);

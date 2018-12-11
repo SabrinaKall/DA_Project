@@ -12,7 +12,6 @@ import src.observer.link.PerfectLinkObserver;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,8 +28,6 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     private Map<UniqueMessageID, PerfectLinkMessage> toSend = new ConcurrentHashMap<>();
     private Map<Integer, MessageTracker> alreadyDelivered = new HashMap<>();
     private Map<Integer, AtomicInteger> sentProcessIds = new ConcurrentHashMap<>();
-
-    private Set<Integer> ignoreSet = new HashSet<>(); //testing
 
     public PerfectLink(int port) throws UninitialisedMembershipsException, SocketException {
 
@@ -101,10 +98,6 @@ public class PerfectLink implements Link, FairLossLinkObserver {
     public void deliverFromFairLossLink(Message msg, int senderID)  {
         PerfectLinkMessage messagePL = (PerfectLinkMessage) msg;
 
-        if(ignoreSet.contains(senderID)) { //testing
-            return;
-        }
-
         if (messagePL.isAck()) {
             UniqueMessageID msgID = new UniqueMessageID(senderID, messagePL.getMessageSequenceNumber());
             toSend.remove(msgID);
@@ -129,15 +122,5 @@ public class PerfectLink implements Link, FairLossLinkObserver {
         threadForPerfectLinkSending.interrupt();
         threadForFairLossLinkDelivery.interrupt();
         fairLossLink.shutdown();
-    }
-
-    //testing
-    public void ignore(int pID) {
-        ignoreSet.add(pID);
-    }
-
-    //testing
-    public void stopIgnoring(int pID) {
-        ignoreSet.remove(pID);
     }
 }

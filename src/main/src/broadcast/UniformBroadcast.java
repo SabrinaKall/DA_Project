@@ -114,9 +114,4 @@ public class UniformBroadcast implements BestEffortBroadcastObserver {
     public void shutdown() {
         bestEffortBroadcast.shutdown();
     }
-
-    //testing
-    public PerfectLink getLink() {
-        return this.bestEffortBroadcast.getLink();
-    }
 }
